@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <title>新增公告</title>
+  </head>
+  <body>
+    <h2>新增公告</h2>
+
+    <form id="announcementForm">
+      <label>標題：</label><br />
+      <input type="text" id="title" required /><br /><br />
+
+      <label>內容：</label><br />
+      <textarea id="content" rows="5" required></textarea><br /><br />
+
+      <button type="submit">發布</button>
+    </form>
+
+    <p id="message"></p>
+
+    <script>
+      document
+        .getElementById('announcementForm')
+        .addEventListener('submit', function (e) {
+          e.preventDefault();
+
+          const title = document.getElementById('title').value.trim();
+          const content = document.getElementById('content').value.trim();
+
+          if (!title || !content) {
+            alert('請填寫完整標題與內容');
+            return;
+          }
+
+          fetch('/coach/api/announcements', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title: title, // ✅ 使用輸入欄位的資料
+              content: content, // ✅ 使用輸入欄位的資料
+            }),
+          })
+            .then((res) => {
+              if (!res.ok) throw new Error('回傳錯誤');
+              return res.json();
+            })
+            .then((data) => {
+              document.getElementById('message').textContent =
+                '✅ 公告已發布！';
+              document.getElementById('announcementForm').reset();
+              window.location.href = '/coach/dashboard';
+            })
+            .catch((err) => {
+              console.error(err);
+              document.getElementById('message').textContent =
+                '❌ 發布失敗，請稍後再試。';
+            });
+        });
+    </script>
+  </body>
+</html>

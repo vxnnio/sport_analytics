@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>每日訓練狀況評估</title>
+  </head>
+  <body>
+    <h2>今日訓練狀況評估</h2>
+    <form method="POST">
+      <label>訓練狀況：</label>
+      <select name="training_status" required>
+        <option value="">請選擇</option>
+        <option value="😆">非常良好</option>
+        <option value="😀">良好</option>
+        <option value="🙂">普通</option>
+        <option value="☹️">欠佳</option>
+        <option value="😭">非常糟</option></select
+      ><br /><br />
+
+      <label>體能狀況：</label>
+      <select name="fitness" required>
+        <option value="">請選擇</option>
+        <option value="😆">非常良好</option>
+        <option value="😀">良好</option>
+        <option value="🙂">普通</option>
+        <option value="☹️">欠佳</option>
+        <option value="😭">非常糟</option></select
+      ><br /><br />
+
+      <label>睡眠狀況：</label>
+      <select name="sleep" required>
+        <option value="">請選擇</option>
+        <option value="😆">非常良好</option>
+        <option value="😀">良好</option>
+        <option value="🙂">普通</option>
+        <option value="☹️">欠佳</option>
+        <option value="😭">非常糟</option></select
+      ><br /><br />
+
+      <label>食慾狀況：</label>
+      <select name="appetite" required>
+        <option value="">請選擇</option>
+        <option value="😆">非常良好</option>
+        <option value="😀">良好</option>
+        <option value="🙂">普通</option>
+        <option value="☹️">欠佳</option>
+        <option value="😭">非常糟</option></select
+      ><br /><br />
+
+      <label>備註：</label><br />
+      <textarea name="note" rows="3" cols="40"></textarea><br /><br />
+
+      <button type="submit">送出評估</button>
+    </form>
+    <br />
+    <a href="/auth/dashboard">返回主頁</a>
+  </body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>上傳今日訓練紀錄</title>
+  </head>
+  <body>
+    <h2>📤 上傳今日訓練紀錄</h2>
+
+    <form method="POST">
+      <label>訓練日期：</label>
+      <input type="date" name="date" required /><br /><br />
+
+      <!-- 1. 跳繩 -->
+      <label>跳繩類型：</label>
+      <select name="jump_type">
+        <option value="">-- 選擇類型 --</option>
+        <option value="單跳">單跳</option>
+        <option value="雙迴旋">雙迴旋</option>
+        <option value="左右腳">左右腳</option>
+      </select>
+      <label>次數：</label>
+      <input type="number" name="jump_count" min="0" /><br /><br />
+
+      <!-- 2. 跑步 -->
+      <label>跑步距離 (公里)：</label>
+      <input type="number" name="run_distance" step="0.1" min="0" />
+      <label>時間 (分鐘)：</label>
+      <input type="text" name="run_time" placeholder="如：25:30" /><br /><br />
+
+      <!-- 3. 重量訓練 -->
+      <label>重量訓練部位：</label>
+      <select name="weight_part">
+        <option value="">-- 選擇部位 --</option>
+        <option value="腿">腿</option>
+        <option value="背">背</option>
+        <option value="胸">胸</option>
+        <option value="肩">肩</option>
+        <option value="手臂">手臂</option>
+      </select>
+      <label>組數：</label>
+      <input type="number" name="weight_sets" min="0" /><br /><br />
+
+      <!-- 4. 敏捷訓練 -->
+      <label>敏捷訓練內容：</label>
+      <select name="agility_type">
+        <option value="">-- 選擇敏捷訓練 --</option>
+        <option value="梯形敏捷訓練">梯形敏捷訓練</option>
+        <option value="Z字跑">Z字跑</option>
+        <option value="反應球訓練">反應球訓練</option>
+        <option value="快速橫移">快速橫移</option>
+        <option value="其他">其他（請下方填寫）</option></select
+      ><br />
+      <label>其他敏捷訓練補充：</label><br />
+      <textarea
+        name="agility_note"
+        rows="2"
+        cols="50"
+        placeholder="可補充其他敏捷訓練內容"
+      ></textarea
+      ><br /><br />
+
+      <!-- 5. 專項重點訓練 -->
+      <label>專項重點訓練描述：</label><br />
+      <textarea
+        name="special_focus"
+        rows="4"
+        cols="50"
+        placeholder="例如：起跑反應、加速爆發力、橫移控制等"
+      ></textarea
+      ><br /><br />
+
+      <button type="submit">送出訓練紀錄</button>
+    </form>
+
+    <br />
+    <a href="/auth/dashboard">返回主頁</a>
+  </body>
+</html>

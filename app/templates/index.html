@@ -1,0 +1,50 @@
+{% extends 'base.html' %} {% block title %}首頁 - 運動員系統{% endblock %} {%
+block content %}
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="row align-items-center">
+      <!-- Left Text -->
+      <div class="col-lg-6 mb-4 mb-lg-0">
+        <span class="badge bg-warning text-dark mb-2">線上 Online</span>
+        <h1 class="fw-bold mb-3">運動員綜合管理系統</h1>
+
+        <p class="text-danger small mb-1">
+          (2025.02.04 02:30)功能已經完成維護。
+        </p>
+        <p class="text-danger small mb-3">
+          (2024.12.19) 若有疑問請來信 marco@ctada.org.tw。
+        </p>
+
+        <p class="text-muted">
+          - 創造
+          <span class="text-warning fw-bold">公平 Fair</span> 的運動<br />
+          - <span class="text-warning fw-bold">教練</span> 有責維持潔淨運動。
+        </p>
+
+        <!-- Login & Register Buttons -->
+        <div class="d-flex gap-3 mt-4">
+          <a
+            href="{{ url_for('auth.login') }}"
+            class="btn btn-success px-4 py-2"
+            >登入</a
+          >
+          <a
+            href="{{ url_for('auth.register') }}"
+            class="btn btn-outline-dark px-4 py-2"
+            >註冊</a
+          >
+        </div>
+      </div>
+
+      <!-- Right Image -->
+      <div class="col-lg-6 text-center">
+        <img
+          src="{{ url_for('static', filename='1.png') }}"
+          alt="系統插圖"
+          class="img-fluid"
+        />
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

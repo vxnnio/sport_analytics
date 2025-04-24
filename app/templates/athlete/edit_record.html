@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>編輯訓練紀錄</title>
+  </head>
+  <body>
+    <h2>✏️ 編輯訓練資料</h2>
+    <form method="POST">
+      <label>日期：</label>
+      <input type="date" name="date" value="{{ record.date }}" required /><br />
+
+      <label>時間：</label>
+      <input type="time" name="time" value="{{ record.time }}" required /><br />
+
+      <label>心率：</label>
+      <input
+        type="number"
+        name="heart_rate"
+        step="0.1"
+        value="{{ record.heart_rate }}"
+        required
+      /><br />
+
+      <label>距離 (km)：</label>
+      <input
+        type="number"
+        name="distance"
+        step="0.1"
+        value="{{ record.distance }}"
+        required
+      /><br />
+
+      <label>訓練內容：</label><br />
+      <textarea name="menu" rows="4" cols="50">{{ record.menu }}</textarea
+      ><br /><br />
+
+      <button type="submit">✅ 更新</button>
+    </form>
+
+    <a href="/training/history">返回紀錄列表</a>
+  </body>
+</html>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>新增教練帳號</title>
+  </head>
+  <body>
+    <h2>➕ 新增教練帳號</h2>
+    <form method="POST">
+      <label>帳號：</label>
+      <input type="text" name="username" required /><br /><br />
+      <label>密碼：</label>
+      <input type="password" name="password" required /><br /><br />
+      <button type="submit">建立帳號</button>
+    </form>
+
+    <br />
+    <a href="{{ url_for('auth.dashboard') }}">🔙 回主頁</a>
+  </body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>教練公告管理</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-light">
+    <nav class="navbar navbar-light bg-white shadow-sm">
+      <div class="container">
+        <a class="navbar-brand fw-bold" href="{{ url_for('coach.dashboard') }}">
+          👨‍🏫 教練主控台
+        </a>
+      </div>
+    </nav>
+
+    <main class="container py-5">
+      <h2 class="fw-bold mb-4">📢 公告列表</h2>
+      <div class="card shadow-sm">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <span class="h5 mb-0">所有公告</span>
+          <button
+            class="btn btn-success btn-sm"
+            data-bs-toggle="modal"
+            data-bs-target="#announcementModal"
+            data-action="new"
+          >
+            + 新增公告
+          </button>
+        </div>
+        <div class="table-responsive p-4">
+          <table class="table table-hover text-center mb-0">
+            <thead class="table-warning">
+              <tr>
+                <th>標題</th>
+                <th>日期</th>
+                <th>內容預覽</th>
+                <th>類別</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ann in announcements %}
+              <tr>
+                <td>{{ ann.title }}</td>
+                <td>{{ ann.date.strftime('%Y-%m-%d') }}</td>
+                <td>
+                  {{ ann.content[:50] }}{% if ann.content|length > 50 %}...{%
+                  endif %}
+                </td>
+                <td>{{ ann.category }}</td>
+                <td>
+                  <button
+                    class="btn btn-sm btn-outline-primary me-1"
+                    data-bs-toggle="modal"
+                    data-bs-target="#announcementModal"
+                    data-action="edit"
+                    data-id="{{ ann.id }}"
+                    data-date="{{ ann.date.strftime('%Y-%m-%d') }}"
+                    data-title="{{ ann.title }}"
+                    data-content="{{ ann.content }}"
+                    data-category="{{ ann.category }}"
+                  >
+                    📝 編輯
+                  </button>
+                  <form
+                    method="POST"
+                    action="{{ url_for('coach.delete_announcement', aid=ann.id) }}"
+                    class="d-inline"
+                    onsubmit="return confirm('確定要刪除此公告嗎？');"
+                  >
+                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                      🗑️ 刪除
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="5" class="text-muted">目前沒有任何公告。</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <div class="modal fade" id="announcementModal" tabindex="-1">
+      <div class="modal-dialog">
+        <form class="modal-content" id="announcementForm" method="POST">
+          <div class="modal-header">
+            <h5 class="modal-title">公告</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" name="id" id="ann-id" />
+            <div class="mb-3">
+              <label class="form-label">日期</label>
+              <input
+                type="date"
+                name="date"
+                class="form-control"
+                id="ann-date"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">標題</label>
+              <input
+                type="text"
+                name="title"
+                class="form-control"
+                id="ann-title"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">內容</label>
+              <textarea
+                name="content"
+                rows="4"
+                class="form-control"
+                id="ann-content"
+                required
+              ></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">分類</label>
+              <select
+                name="category"
+                class="form-select"
+                id="ann-category"
+                required
+              >
+                <option value="重要">重要</option>
+                <option value="任務">任務</option>
+                <option value="閒聊">閒聊</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              data-bs-dismiss="modal"
+            >
+              取消
+            </button>
+            <button type="submit" class="btn btn-primary">儲存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      const announcementModal = document.getElementById('announcementModal');
+      announcementModal.addEventListener('show.bs.modal', (event) => {
+        const btn = event.relatedTarget;
+        const action = btn.getAttribute('data-action');
+        const form = document.getElementById('announcementForm');
+        const titleEl = announcementModal.querySelector('.modal-title');
+
+        if (action === 'new') {
+          titleEl.textContent = '📢 新增公告';
+          form.action = "{{ url_for('coach.new_announcement') }}";
+          form.reset();
+          document.getElementById('ann-id').value = '';
+        } else {
+          // 編輯
+          const id = btn.dataset.id;
+          titleEl.textContent = '📝 編輯公告';
+          form.action = `/coach/announcements/${id}/edit`;
+          document.getElementById('ann-id').value = id;
+          document.getElementById('ann-date').value = btn.dataset.date;
+          document.getElementById('ann-title').value = btn.dataset.title;
+          document.getElementById('ann-content').value = btn.dataset.content;
+          document.getElementById('ann-category').value = btn.dataset.category;
+        }
+      });
+    </script>
+  </body>
+</html>

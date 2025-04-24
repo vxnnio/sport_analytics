@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>查看所有紀錄</title>
+  </head>
+  <body>
+    <h2>📋 訓練資料紀錄</h2>
+    <table border="1">
+      <tr>
+        <th>日期</th>
+        <th>跳繩</th>
+        <th>跑步</th>
+        <th>重量訓練</th>
+        <th>敏捷訓練</th>
+        <th>專項</th>
+        <th>操作</th>
+      </tr>
+      {% for record in trainings %}
+      <tr>
+        <td>{{ record.date }}</td>
+        <td>{{ record.jump_type }} - {{ record.jump_count }}下</td>
+        <td>{{ record.run_distance }} km - {{ record.run_time }}</td>
+        <td>{{ record.weight_part }} - {{ record.weight_sets }}組</td>
+        <td>{{ record.agility_type }} - {{ record.agility_note }}</td>
+        <td>{{ record.special_focus }}</td>
+        <td>
+          <a href="/training/edit/{{ record.id }}">編輯</a> |
+          <form
+            action="/training/delete/{{ record.id }}"
+            method="POST"
+            style="display: inline"
+          >
+            <button type="submit">刪除</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+
+    <h2>📝 每日訓練狀況評估</h2>
+    <table border="1">
+      <tr>
+        <th>日期</th>
+        <th>訓練狀況</th>
+        <th>體能</th>
+        <th>睡眠</th>
+        <th>食慾</th>
+        <th>備註</th>
+        <th>操作</th>
+      </tr>
+      {% for eval in evaluations %}
+      <tr>
+        <td>{{ eval.eval_date }}</td>
+        <td>{{ eval.training_status }}</td>
+        <td>{{ eval.fitness }}</td>
+        <td>{{ eval.sleep }}</td>
+        <td>{{ eval.appetite }}</td>
+        <td>{{ eval.note }}</td>
+        <td>
+          <a href="/evaluation/edit/{{ eval.id }}">編輯</a> |
+          <form
+            action="/evaluation/delete/{{ eval.id }}"
+            method="POST"
+            style="display: inline"
+          >
+            <button type="submit">刪除</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+
+    <br />
+    <a href="/auth/dashboard">返回主頁</a>
+  </body>
+</html>
