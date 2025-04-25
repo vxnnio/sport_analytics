@@ -4,6 +4,11 @@ from flask import Blueprint, render_template, request, redirect, url_for
 from datetime import datetime
 from app.database import get_db
 from app.models.announcement import Announcement
+from flask_login import login_required
+from flask_login import current_user
+from app.database import SessionLocal
+
+
 
 coach_bp = Blueprint("coach", __name__, url_prefix="/coach")
 
@@ -15,18 +20,28 @@ def dashboard():
 
 
 @coach_bp.route("/announcements", methods=["GET"])
+@login_required
 def announcements():
-    # 列出所有公告
-    with get_db() as session:
+    # 创建会话
+    session = SessionLocal()
+
+    try:
+        # 使用 session.query() 进行查询
         announcements = (
-            session.query(Announcement).order_by(Announcement.date.desc()).all()
+            session.query(Announcement)
+            .filter(Announcement.coach_id == current_user.id)
+            .order_by(Announcement.date.desc())  # 按日期降序排序
+            .all()
         )
-    return render_template("coach/announcements.html", announcements=announcements)
 
+        # 渲染模板并返回
+        return render_template("coach/announcements.html", announcements=announcements)
 
+    finally:
+        session.close()  # 确保关闭会话
 @coach_bp.route("/announcements/new", methods=["GET", "POST"])
+@login_required
 def new_announcement():
-    # 新增公告
     if request.method == "POST":
         form = request.form
         ann = Announcement(
@@ -34,7 +49,7 @@ def new_announcement():
             title=form["title"],
             content=form["content"],
             category=form["category"],
-            coach_id=1,  # TODO: 換成 current_user.id
+            coach_id=current_user.id,  # ✅ 改這裡
         )
         with get_db() as session:
             session.add(ann)
@@ -42,7 +57,6 @@ def new_announcement():
         return redirect(url_for("coach.announcements"))
 
     return render_template("coach/new_announcement.html")
-
 
 @coach_bp.route("/announcements/<int:aid>/edit", methods=["GET", "POST"])
 def edit_announcement(aid):

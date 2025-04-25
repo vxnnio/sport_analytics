@@ -7,7 +7,9 @@ from app.routes.coach import coach_bp
 from app.routes.auth import auth_bp
 from app.routes.admin import admin_bp
 from app.routes.main import main_bp
+from app.routes.training import training_bp
 from app.models import User
+from app.models.announcement import Announcement
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -26,6 +28,7 @@ def create_app():
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
+    app.register_blueprint(training_bp)
     
     
     @login_manager.user_loader

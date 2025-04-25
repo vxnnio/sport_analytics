@@ -4,6 +4,9 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from app.models import User, Announcement
 from app.database import get_db
 from sqlalchemy.orm import Session
+from flask_login import login_required
+from app.database import SessionLocal
+
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -50,8 +53,12 @@ def logout():
 @auth_bp.route('/dashboard')
 @login_required
 def dashboard():
-    announcements = Announcement.query.all()
-    return render_template('dashboard.html', announcements=announcements)
+    session = SessionLocal()
+    try:
+        announcements = session.query(Announcement).all()
+        return render_template('athlete/dashboard.html', announcements=announcements)
+    finally:
+        session.close()
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
