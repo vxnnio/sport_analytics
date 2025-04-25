@@ -20,6 +20,7 @@ def create_app():
     
     login_manager = LoginManager()
     login_manager.init_app(app)
+    login_manager.login_view = 'auth.login'  # 指定未登入者會被導向的登入頁面 endpoint
 
     app.register_blueprint(coach_bp)
     app.register_blueprint(admin_bp, url_prefix='/admin')

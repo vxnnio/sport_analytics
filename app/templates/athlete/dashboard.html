@@ -125,34 +125,7 @@
  <!-- 🗒️ 教練公告 -->
  <h5 class="fw-bold mb-3">🗒️ 教練公告</h5>
 
- <div class="scrolling-wrapper d-flex flex-row overflow-auto mb-4 gap-3">
-  <div class="announcement-grid">
-    {% if announcements %}
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover text-center">
-                <thead class="table-warning">
-                    <tr>
-                        <th>標題</th>
-                        <th>日期</th>
-                        <th>內容</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for announcement in announcements %}
-                        <tr>
-                            <td>{{ announcement.title }}</td>
-                            <td>{{ announcement.date }}</td>
-                            <td>{{ announcement.content }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% else %}
-        <p>目前沒有公告。</p>
-    {% endif %}
-  </div>
- </div>
+ 
 
 
   <!-- 📌 訓練功能 -->

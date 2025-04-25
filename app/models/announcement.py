@@ -1,7 +1,6 @@
 from sqlalchemy import Column, Integer, String, Text, Date, ForeignKey
 from sqlalchemy.orm import relationship
-from app.database import Base
-
+from app.database import Base  # 确保 Base 来自正确的 SQLAlchemy 配置
 
 class Announcement(Base):
     __tablename__ = "announcement"
@@ -13,4 +12,4 @@ class Announcement(Base):
     category = Column(String(20), nullable=False)
     coach_id = Column(Integer, ForeignKey("user.id"), nullable=False)
 
-    coach = relationship("User", back_populates="announcements")
+    coach = relationship("User", back_populates="announcements")  # 确保 User 模型正确配置

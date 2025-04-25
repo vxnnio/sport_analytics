@@ -43,8 +43,8 @@
             <td>{{ user.username }}</td>
             <td>{{ user.role }}</td>
             <td>
-              <a href="/auth/admin/edit/{{ user.id }}" class="btn btn-sm btn-outline-primary">📝 編輯</a>
-              <form method="POST" action="/auth/admin/delete/{{ user.id }}" style="display:inline;" onsubmit="return confirm('確定要刪除此使用者嗎？');">
+              <a href="/admin/edit/{{ user.id }}" class="btn btn-sm btn-outline-primary">📝 編輯</a>
+              <form method="POST" action="/admin/delete/{{ user.id }}" style="display:inline;" onsubmit="return confirm('確定要刪除此使用者嗎？');">
                 <button type="submit" class="btn btn-sm btn-outline-danger">🗑️ 刪除</button>
               </form>
             </td>
@@ -60,7 +60,7 @@
   </div>
 
   <div class="text-end mt-3">
-    <a href="{{ url_for('auth.admin_dashboard') }}" class="btn btn-outline-secondary">⬅️ 返回主控台</a>
+    <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-outline-secondary">⬅️ 返回主控台</a>
   </div>
 </div>
 </body>

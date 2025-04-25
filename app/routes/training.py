@@ -1,51 +1,66 @@
-# # app/routes/api_training.py
-# from flask import Blueprint, request, jsonify
-# from flask_login import login_required, current_user
-# from app.database import get_db
-# from app.models.training import Training
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_login import login_required, current_user
+from werkzeug.security import generate_password_hash
+from app.models.training import Training
+from app.database import SessionLocal
+from flask import abort
 
-# api_training_bp = Blueprint("api_training", __name__, url_prefix="/api/trainings")
+training_bp = Blueprint('training', __name__)
 
+@training_bp.route('/dashboard')
+@login_required
+def training_dashboard():
+    return render_template('training/dashboard.html')
 
-# @api_training_bp.route("", methods=["GET", "POST"])
-# @login_required
-# def trainings():
-#     with get_db() as db:
-#         if request.method == "GET":
-#             recs = (
-#                 db.query(Training)
-#                 .filter_by(user_id=current_user.id)
-#                 .order_by(Training.date.desc())
-#                 .all()
-#             )
-#             return jsonify([r.to_dict() for r in recs]), 200
+@training_bp.route('/create_training', methods=['GET', 'POST'])
+@login_required
+def create_training():
+    if request.method == 'POST':
+        # 你可以根據需要調整
+        data = request.form
+        new_training = Training(
+            user_id=current_user.id,
+            title=data['title'],
+            date=data['date'],
+            details=data['details'],
+        )
+        db = SessionLocal()  # 創建資料庫 session
+        db.add(new_training)
+        db.commit()
+        flash('✅ 訓練已成功創建！')
+        return redirect(url_for('training.training_dashboard'))
+    return render_template('training/create_training.html')
 
-#         data = request.get_json()
-#         new = Training(user_id=current_user.id, **data)
-#         db.add(new)
-#         db.commit()
-#         db.refresh(new)
-#         return jsonify(new.to_dict()), 201
+@training_bp.route('/edit/<int:training_id>', methods=['GET', 'POST'])
+@login_required
+def edit_training(training_id):
+    db = SessionLocal()
+    training = db.query(Training).get(training_id)
+    
+    if not training or training.user_id != current_user.id:
+        abort(404)
 
+    if request.method == 'POST':
+        training.title = request.form['title']
+        training.date = request.form['date']
+        training.details = request.form['details']
+        
+        db.commit()
+        flash('✅ 訓練資料已更新')
+        return redirect(url_for('training.training_dashboard'))
 
-# @api_training_bp.route("/<int:id>", methods=["GET", "PUT", "DELETE"])
-# @login_required
-# def training_detail(id):
-#     with get_db() as db:
-#         rec = db.query(Training).get(id)
-#         if not rec or rec.user_id != current_user.id:
-#             return jsonify({"error": "Not found"}), 404
+    return render_template('training/edit_training.html', training=training)
 
-#         if request.method == "GET":
-#             return jsonify(rec.to_dict()), 200
+@training_bp.route('/delete/<int:training_id>', methods=['POST'])
+@login_required
+def delete_training(training_id):
+    db = SessionLocal()
+    training = db.query(Training).get(training_id)
+    
+    if not training or training.user_id != current_user.id:
+        abort(404)
 
-#         if request.method == "PUT":
-#             for k, v in request.get_json().items():
-#                 setattr(rec, k, v)
-#             db.commit()
-#             return jsonify(rec.to_dict()), 200
-
-#         # DELETE
-#         db.delete(rec)
-#         db.commit()
-#         return "", 204
+    db.delete(training)
+    db.commit()
+    flash('🗑️ 訓練已刪除')
+    return redirect(url_for('training.training_dashboard'))

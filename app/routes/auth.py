@@ -12,22 +12,35 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        
-        # 使用 get_db() 方法來獲取資料庫會話
+
         with get_db() as db:
+            # 查詢用戶
             user = db.query(User).filter_by(username=username).first()
 
-            if user and check_password_hash(user.password, password):
-                login_user(user)
-                if user.role == 'coach':
-                    return redirect(url_for('coach.dashboard'))
-                elif user.role == 'athlete':
-                    return redirect(url_for('auth.dashboard'))
+            if user:  # 如果找到使用者
+                # 檢查密碼
+                if check_password_hash(user.password, password):
+                    login_user(user)
+
+                    # 根據角色重定向到不同的頁面
+                    if user.role == 'coach':
+                        return redirect(url_for('coach.dashboard'))
+                    elif user.role == 'athlete':
+                        return redirect(url_for('auth.dashboard'))
+                    elif user.role == 'admin':
+                        return redirect(url_for('admin.admin_dashboard'))
+                    else:
+                        flash('未知的使用者角色')
+                        return redirect(url_for('auth.login'))
                 else:
-                    return redirect(url_for('admin.admin_dashboard'))
-            
-            flash('帳號或密碼錯誤')
-    return render_template('shared/login.html')
+                    flash('密碼錯誤')
+            else:
+                flash('帳號不存在')
+
+            return render_template('shared/login.html')  # 密碼錯誤或帳號不存在，都顯示錯誤並重導
+
+    return render_template('shared/login.html')  # 初次加載登入頁面
+
 @auth_bp.route('/logout')
 @login_required
 def logout():
