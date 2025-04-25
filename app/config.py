@@ -5,6 +5,7 @@ load_dotenv()
 
 
 class Config:
+    SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-key")
     DB_USERNAME = os.getenv("DB_USERNAME")
     DB_PASSWORD = os.getenv("DB_PASSWORD")
     DB_HOST = os.getenv("DB_HOST")
