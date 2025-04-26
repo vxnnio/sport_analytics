@@ -1,96 +1,101 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
-from werkzeug.security import generate_password_hash
+from app.database import get_db
 from app.models.training import Training
-from app.database import SessionLocal
-from flask import abort
-from sqlalchemy.exc import SQLAlchemyError
+from datetime import datetime
+from app.models.evaluation import Evaluation # ✅ 新增這行
+from app.models.announcement import Announcement
+from app.database import get_db  # 引入 get_db
 
 training_bp = Blueprint('training', __name__)
 
-@training_bp.route('/dashboard')
+@training_bp.route('/upload', methods=['GET', 'POST'])
 @login_required
-def training_dashboard():
-    db = SessionLocal()
-    try:
-        trainings = db.query(Training).filter_by(user_id=current_user.id).order_by(Training.date.desc()).all()
-        return render_template('training/dashboard.html', trainings=trainings)
-    except SQLAlchemyError as e:
-        current_app.logger.error(f"Database error: {str(e)}")
-        abort(500)
-    finally:
-        db.close()
-
-@training_bp.route('/create_training', methods=['GET', 'POST'])
-@login_required
-def create_training():
+def upload_training():
     if request.method == 'POST':
-        db = SessionLocal()
-        try:
-            data = request.form
-            new_training = Training(
-                user_id=current_user.id,
-                title=data['title'],
-                date=data['date'],
-                details=data['details'],
-            )
-            db.add(new_training)
-            db.commit()
-            flash('✅ 训练已成功创建！', 'success')
-            return redirect(url_for('training.training_dashboard'))
-        except SQLAlchemyError as e:
-            db.rollback()
-            current_app.logger.error(f"Database error: {str(e)}")
-            flash('❌ 创建训练时出错', 'error')
-        finally:
-            db.close()
-    return render_template('training/create_training.html')
+        with get_db() as db:
+            try:
+                record = Training(
+                    user_id=current_user.id,
+                    date=datetime.strptime(request.form['date'], "%Y-%m-%d").date(),
+                    jump_type=request.form.get('jump_type'),
+                    jump_count=int(request.form.get('jump_count') or 0),
+                    run_distance=float(request.form.get('run_distance') or 0),
+                    run_time=request.form.get('run_time'),
+                    weight_part=request.form.get('weight_part'),
+                    weight_sets=int(request.form.get('weight_sets') or 0),
+                    agility_type=request.form.get('agility_type'),
+                    agility_note=request.form.get('agility_note'),
+                    special_focus=request.form.get('special_focus')
+                )
+                db.add(record)
+                db.commit()
+                flash("✅ 訓練紀錄已成功上傳")
+                return redirect(url_for('training.training_history'))
+            except Exception as e:
+                db.rollback()
+                flash(f"❌ 出錯了: {str(e)}")
 
-@training_bp.route('/edit/<int:training_id>', methods=['GET', 'POST'])
+    return render_template('athlete/upload.html')
+
+@training_bp.route('/history')
 @login_required
-def edit_training(training_id):
-    db = SessionLocal()
-    try:
-        training = db.query(Training).get(training_id)
-        
-        if not training or training.user_id != current_user.id:
-            abort(404)
+def training_history():
+    with get_db() as db:  # 使用 get_db() 管理資料庫會話
+        training_records = db.query(Training).filter_by(user_id=current_user.id).order_by(Training.date.desc()).all()
+        evaluation_records = db.query(Evaluation).filter_by(user_id=current_user.id).order_by(Evaluation.eval_date.desc()).all()
+    return render_template('athlete/all_records.html', trainings=training_records, evaluations=evaluation_records)
+
+
+# ✅ 編輯訓練紀錄
+@training_bp.route('/edit/<int:record_id>', methods=['GET', 'POST'])
+@login_required
+def edit_record(record_id):
+    with get_db() as db:  # 使用 get_db() 管理資料庫會話
+        record = db.query(Training).get_or_404(record_id)
+        if record.user_id != current_user.id:
+            return "無權限存取", 403
 
         if request.method == 'POST':
-            try:
-                training.title = request.form['title']
-                training.date = request.form['date']
-                training.details = request.form['details']
-                db.commit()
-                flash('✅ 训练资料已更新', 'success')
-                return redirect(url_for('training.training_dashboard'))
-            except SQLAlchemyError as e:
-                db.rollback()
-                current_app.logger.error(f"Database error: {str(e)}")
-                flash('❌ 更新训练时出错', 'error')
+            record.date = datetime.strptime(request.form['date'], "%Y-%m-%d").date()
+            record.time = request.form['time']
+            record.heart_rate = float(request.form['heart_rate'])
+            record.distance = float(request.form['distance'])
+            record.menu = request.form['menu']
+            db.commit()  # 提交變更
+            flash("✅ 訓練紀錄已更新")
+            return redirect(url_for('training.training_history'))
 
-        return render_template('training/edit_training.html', training=training)
-    finally:
-        db.close()
+    return render_template('edit_record.html', record=record)
 
-@training_bp.route('/delete/<int:training_id>', methods=['POST'])
+# ✅ 刪除訓練紀錄
+@training_bp.route('/delete/<int:record_id>', methods=['POST'])
 @login_required
-def delete_training(training_id):
-    db = SessionLocal()
-    try:
-        training = db.query(Training).get(training_id)
-        
-        if not training or training.user_id != current_user.id:
-            abort(404)
+def delete_record(record_id):
+    with get_db() as db:  # 使用 get_db() 管理資料庫會話
+        record = db.query(Training).get_or_404(record_id)
+        if record.user_id != current_user.id:
+            return "無權限刪除", 403
 
-        db.delete(training)
-        db.commit()
-        flash('🗑️ 训练已删除', 'success')
-        return redirect(url_for('training.training_dashboard'))
-    except SQLAlchemyError as e:
-        db.rollback()
-        current_app.logger.error(f"Database error: {str(e)}")
-        flash('❌ 删除训练时出错', 'error')
-        return redirect(url_for('training.training_dashboard'))
-    finally:
-        db.close()
+        db.delete(record)  # 刪除紀錄
+        db.commit()  # 提交變更
+        flash("🗑️ 已刪除一筆紀錄")
+    return redirect(url_for('training.training_history'))
+
+
+@training_bp.route('/api/announcements', methods=['GET'])
+def get_announcements():
+    with get_db() as db:  # 使用 get_db() 管理資料庫會話
+        announcements = db.query(Announcement).all()
+        data = [
+            {
+                'id': a.id,
+                'title': a.title,
+                'content': a.content
+            }
+            for a in announcements
+        ]
+    return jsonify(data), 200
+
+
+
