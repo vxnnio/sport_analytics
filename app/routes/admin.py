@@ -120,3 +120,28 @@ def delete_user(user_id):
 
     return redirect(url_for('admin.user_management'))  # 重定向到用戶管理頁面
 
+@admin_bp.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        role = request.form['role']
+
+        with get_db() as db:  # 用 contextmanager 開啟 session
+            existing_user = db.query(User).filter_by(username=username).first()
+            if existing_user:
+                flash('使用者名稱已存在')
+                return redirect(url_for('auth.register'))  # 修正這裡的 endpoint 名稱
+
+            new_user = User(
+                username=username,
+                password=generate_password_hash(password),
+                role=role
+            )
+            db.add(new_user)
+            db.commit()
+
+            flash('註冊成功，請登入')
+            return redirect(url_for('admin.user_management'))
+
+    return render_template('admin/register.html')
