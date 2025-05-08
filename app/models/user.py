@@ -10,6 +10,8 @@ class User(Base):
     username = Column(String(80), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
     role = Column(String(20), nullable=False)
+    bio = Column(String(500), default="")
+    profile_pic = Column(String(255), default="static/uploads/default.png")
 
     announcements = relationship("Announcement", back_populates="coach")
     trainings = relationship("Training", back_populates="user")
