@@ -100,11 +100,19 @@
   <!-- 個人資訊（靜態資料） -->
   <div class="card mb-4 shadow-sm">
     <div class="card-body d-flex justify-content-between align-items-center">
-      <div>
-        <h5 class="mb-1 fw-bold">👤 {{ current_user.username }}</h5>
-        <p class="text-muted mb-1">角色：{{ current_user.role }}</p>
-        <small class="text-muted">上次登入：2025/04/11</small>
-      </div>
+      <div style="display: flex; align-items: center; gap: 16px; padding: 20px; background-color: #f8f9fa; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);">
+        <img src="{{ url_for('static', filename=current_user.profile_pic) }}" 
+             alt="頭貼" 
+             width="80" height="80" 
+             style="border-radius: 50%; object-fit: cover; border: 2px solid #dee2e6;">
+        
+        <div>
+            <h5 style="margin: 0 0 6px; font-weight: bold;">👤 {{ current_user.username }}</h5>
+            <p style="margin: 0 0 6px; color: #6c757d;">角色：{{ current_user.role }}</p>
+            <small style="color: #adb5bd;">上次登入：2025/04/11</small>
+        </div>
+    </div>
+    
       <div class="text-end">
         <p class="mb-1">本週訓練完成度</p>
         <div class="progress" style="width: 180px;">
@@ -147,11 +155,11 @@
       <div class="card card-yellow card-hover h-100">
         <div class="card-body text-center d-flex flex-column align-items-center">
           <div class="icon-circle">📤</div>
-          <h6 class="fw-bold mt-3">上傳訓練資料</h6>
-          <p class="text-muted small">整合裝置資料，管理訓練數據。</p>
-          <a href="/training/upload" class="btn btn-yellow w-100 py-2 mt-auto">上傳資料</a>
+           <h6 class="fw-bold mt-3">今日訓練紀錄</h6>
+           <p class="text-muted small">被動訓練查看 + 主動訓練填寫。</p>
+           <a href="{{ url_for('training.training_today') }}" class="btn btn-yellow w-100 py-2 mt-auto">前往紀錄</a>
         </div>
-      </div>
+    </div>
     </div>
     <!-- 查看紀錄 -->
     <div class="col-md-6">
@@ -171,7 +179,7 @@
           <div class="icon-circle">📋</div>
           <h6 class="fw-bold mt-3">訓練評估表單</h6>
           <p class="text-muted small">週期性填寫訓練反饋與自評紀錄。</p>
-          <a href="/training/evaluation" class="btn btn-yellow w-100 py-2 mt-auto">開始評估</a>
+          <a href="/profile/" class="btn btn-yellow w-100 py-2 mt-auto">開始評估</a>
         </div>
       </div>
     </div>

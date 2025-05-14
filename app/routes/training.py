@@ -1,101 +1,78 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+# routes/training.py
+from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
-from app.database import get_db
-from app.models.training import Training
 from datetime import datetime
-from app.models.evaluation import Evaluation # ✅ 新增這行
-from app.models.announcement import Announcement
-from app.database import get_db  # 引入 get_db
+import json
 
-training_bp = Blueprint('training', __name__)
+from app.models.training import Training
+from app.database import get_db
 
-@training_bp.route('/upload', methods=['GET', 'POST'])
+training_bp = Blueprint('training', __name__, url_prefix='/training')
+
+@training_bp.route('/today', methods=['GET'])
 @login_required
-def upload_training():
-    if request.method == 'POST':
-        with get_db() as db:
-            try:
-                record = Training(
-                    user_id=current_user.id,
-                    date=datetime.strptime(request.form['date'], "%Y-%m-%d").date(),
-                    jump_type=request.form.get('jump_type'),
-                    jump_count=int(request.form.get('jump_count') or 0),
-                    run_distance=float(request.form.get('run_distance') or 0),
-                    run_time=request.form.get('run_time'),
-                    weight_part=request.form.get('weight_part'),
-                    weight_sets=int(request.form.get('weight_sets') or 0),
-                    agility_type=request.form.get('agility_type'),
-                    agility_note=request.form.get('agility_note'),
-                    special_focus=request.form.get('special_focus')
-                )
-                db.add(record)
-                db.commit()
-                flash("✅ 訓練紀錄已成功上傳")
-                return redirect(url_for('training.training_history'))
-            except Exception as e:
-                db.rollback()
-                flash(f"❌ 出錯了: {str(e)}")
+def training_today():
+    selected_date = request.args.get('date')
+    current_date = selected_date or datetime.today().strftime('%Y-%m-%d')
 
-    return render_template('athlete/upload.html')
+    with get_db() as db:
+        record = db.query(Training).filter_by(user_id=current_user.id, date=current_date).first()
 
-@training_bp.route('/history')
+    return render_template('athlete/upload.html', current_date=current_date, record=record)
+
+@training_bp.route('/today/save', methods=['POST'])
 @login_required
-def training_history():
-    with get_db() as db:  # 使用 get_db() 管理資料庫會話
-        training_records = db.query(Training).filter_by(user_id=current_user.id).order_by(Training.date.desc()).all()
-        evaluation_records = db.query(Evaluation).filter_by(user_id=current_user.id).order_by(Evaluation.eval_date.desc()).all()
-    return render_template('athlete/all_records.html', trainings=training_records, evaluations=evaluation_records)
+def training_today_save():
+    date_str = request.form.get('selected_date')
 
+    with get_db() as db:
+        record = db.query(Training).filter_by(user_id=current_user.id, date=date_str).first()
+        if not record:
+            record = Training(user_id=current_user.id, date=date_str)
 
-# ✅ 編輯訓練紀錄
-@training_bp.route('/edit/<int:record_id>', methods=['GET', 'POST'])
-@login_required
-def edit_record(record_id):
-    with get_db() as db:  # 使用 get_db() 管理資料庫會話
-        record = db.query(Training).get_or_404(record_id)
-        if record.user_id != current_user.id:
-            return "無權限存取", 403
+        # 教練派發完成勾選
+        record.coach_physical_done = 'coach_physical_done' in request.form
+        record.coach_technical_done = 'coach_technical_done' in request.form
 
-        if request.method == 'POST':
-            record.date = datetime.strptime(request.form['date'], "%Y-%m-%d").date()
-            record.time = request.form['time']
-            record.heart_rate = float(request.form['heart_rate'])
-            record.distance = float(request.form['distance'])
-            record.menu = request.form['menu']
-            db.commit()  # 提交變更
-            flash("✅ 訓練紀錄已更新")
-            return redirect(url_for('training.training_history'))
+        # 主動體能訓練（含空值處理）
+        record.jump_type = request.form.get("jump_type") or None
+        jump_count_raw = request.form.get("jump_count")
+        record.jump_count = int(jump_count_raw) if jump_count_raw and jump_count_raw.strip().isdigit() else None
 
-    return render_template('edit_record.html', record=record)
+        run_distance_raw = request.form.get("run_distance")
+        record.run_distance = float(run_distance_raw) if run_distance_raw and run_distance_raw.strip() else None
 
-# ✅ 刪除訓練紀錄
-@training_bp.route('/delete/<int:record_id>', methods=['POST'])
-@login_required
-def delete_record(record_id):
-    with get_db() as db:  # 使用 get_db() 管理資料庫會話
-        record = db.query(Training).get_or_404(record_id)
-        if record.user_id != current_user.id:
-            return "無權限刪除", 403
+        run_time_raw = request.form.get("run_time")
+        record.run_time = float(run_time_raw) if run_time_raw and run_time_raw.strip() else None
 
-        db.delete(record)  # 刪除紀錄
-        db.commit()  # 提交變更
-        flash("🗑️ 已刪除一筆紀錄")
-    return redirect(url_for('training.training_history'))
+        record.weight_sets = request.form.get("weight_sets") or None
+        record.agility_type = request.form.get("agility_type") or None
+        record.agility_note = request.form.get("agility_note") or None
 
+        # 主動技巧訓練
+        record.technical_title = request.form.get("technical_title") or None
+        record.technical_feedback = request.form.get("technical_feedback") or None
+        record.technical_completed = request.form.get("technical_completed") == "true"
 
-@training_bp.route('/api/announcements', methods=['GET'])
-def get_announcements():
-    with get_db() as db:  # 使用 get_db() 管理資料庫會話
-        announcements = db.query(Announcement).all()
-        data = [
-            {
-                'id': a.id,
-                'title': a.title,
-                'content': a.content
-            }
-            for a in announcements
-        ]
-    return jsonify(data), 200
+        # 技巧項目 JSON 組裝
+        items = []
+        categories = request.form.getlist('category[]')
+        topics = request.form.getlist('topic[]')
+        durations = request.form.getlist('duration[]')
+        focuses = request.form.getlist('focus[]')
 
+        for i in range(len(categories)):
+            if topics[i].strip():
+                items.append({
+                    "category": categories[i],
+                    "topic": topics[i],
+                    "duration_or_reps": durations[i],
+                    "focus": focuses[i]
+                })
+        record.technical_items = json.dumps(items, ensure_ascii=False)
 
+        db.add(record)
+        db.commit()
 
+    flash("✅ 今日訓練已儲存")
+    return redirect(url_for('training.training_today', date=date_str))

@@ -7,6 +7,7 @@ from app.routes.coach import coach_bp
 from app.routes.auth import auth_bp
 from app.routes.admin import admin_bp
 from app.routes.main import main_bp
+from app.routes.profile import profile_bp
 from app.routes.training import training_bp
 from app.routes.evaluation import evaluation_bp
 from app.models import User
@@ -16,7 +17,7 @@ load_dotenv()
 
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder='static')
     app.config.from_object(Config)
 
     Base.metadata.create_all(bind=engine)
@@ -27,6 +28,7 @@ def create_app():
 
     app.register_blueprint(coach_bp)
     app.register_blueprint(admin_bp, url_prefix='/admin')
+    app.register_blueprint(profile_bp, url_prefix='/profile')
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(training_bp,url_prefix='/training')
