@@ -1,78 +1,178 @@
+<!-- templates/athlete/upload.html -->
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>上傳今日訓練紀錄</title>
-  </head>
-  <body>
-    <h2>📤 上傳今日訓練紀錄</h2>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>今日訓練主頁</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <div class="container py-4">
+    <h4>今日訓練主頁</h4>
 
-    <form method="POST">
-      <label>訓練日期：</label>
-      <input type="date" name="date" required /><br /><br />
+    <!-- 日期選擇器 -->
+    <div class="mb-4">
+      <label for="datePicker">選擇日期</label>
+      <input type="text" id="datePicker" class="form-control" value="{{ current_date }}">
+    </div>
 
-      <!-- 1. 跳繩 -->
-      <label>跳繩類型：</label>
-      <select name="jump_type">
-        <option value="">-- 選擇類型 --</option>
-        <option value="單跳">單跳</option>
-        <option value="雙迴旋">雙迴旋</option>
-        <option value="左右腳">左右腳</option>
-      </select>
-      <label>次數：</label>
-      <input type="number" name="jump_count" min="0" /><br /><br />
+    <form method="POST" action="/training/today/save">
+      <input type="hidden" name="selected_date" value="{{ current_date }}">
 
-      <!-- 2. 跑步 -->
-      <label>跑步距離 (公里)：</label>
-      <input type="number" name="run_distance" step="0.1" min="0" />
-      <label>時間 (分鐘)：</label>
-      <input type="text" name="run_time" placeholder="如：25:30" /><br /><br />
+      <!-- 被動：教練派發體能訓練 -->
+      <div class="card mb-4">
+        <div class="card-header">教練派發體能訓練</div>
+        <div class="card-body">
+          {% if record and record.coach_assigned_physical %}
+            <p>{{ record.coach_assigned_physical }}</p>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="coach_physical_done" {% if record.coach_physical_done %}checked{% endif %}>
+              <label class="form-check-label">我已完成此體能訓練</label>
+            </div>
+          {% else %}
+            <p class="text-muted">今日無派發體能訓練</p>
+          {% endif %}
+        </div>
+      </div>
 
-      <!-- 3. 重量訓練 -->
-      <label>重量訓練部位：</label>
-      <select name="weight_part">
-        <option value="">-- 選擇部位 --</option>
-        <option value="腿">腿</option>
-        <option value="背">背</option>
-        <option value="胸">胸</option>
-        <option value="肩">肩</option>
-        <option value="手臂">手臂</option>
-      </select>
-      <label>組數：</label>
-      <input type="number" name="weight_sets" min="0" /><br /><br />
+      <!-- 被動：教練派發技巧訓練 -->
+      <div class="card mb-4">
+        <div class="card-header">教練派發技巧訓練</div>
+        <div class="card-body">
+          {% if record and record.coach_assigned_technical %}
+            <ul>
+              {% for item in record.coach_assigned_technical | from_json %}
+                <li>[{{ item.category }}] {{ item.topic }} ({{ item.duration_or_reps }}) - {{ item.focus }}</li>
+              {% endfor %}
+            </ul>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="coach_technical_done" {% if record.coach_technical_done %}checked{% endif %}>
+              <label class="form-check-label">我已完成此技巧訓練</label>
+            </div>
+          {% else %}
+            <p class="text-muted">今日無派發技巧訓練</p>
+          {% endif %}
+        </div>
+      </div>
 
-      <!-- 4. 敏捷訓練 -->
-      <label>敏捷訓練內容：</label>
-      <select name="agility_type">
-        <option value="">-- 選擇敏捷訓練 --</option>
-        <option value="梯形敏捷訓練">梯形敏捷訓練</option>
-        <option value="Z字跑">Z字跑</option>
-        <option value="反應球訓練">反應球訓練</option>
-        <option value="快速橫移">快速橫移</option>
-        <option value="其他">其他（請下方填寫）</option></select
-      ><br />
-      <label>其他敏捷訓練補充：</label><br />
-      <textarea
-        name="agility_note"
-        rows="2"
-        cols="50"
-        placeholder="可補充其他敏捷訓練內容"
-      ></textarea
-      ><br /><br />
+      <!-- 主動填寫按鈕 -->
+      <div class="d-grid gap-2 mb-3">
+        <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalPhysical">主動填寫：體能訓練紀錄</button>
+        <button class="btn btn-outline-success" type="button" data-bs-toggle="modal" data-bs-target="#modalTechnical">主動填寫：技巧訓練紀錄</button>
+      </div>
 
-      <!-- 5. 專項重點訓練 -->
-      <label>專項重點訓練描述：</label><br />
-      <textarea
-        name="special_focus"
-        rows="4"
-        cols="50"
-        placeholder="例如：起跑反應、加速爆發力、橫移控制等"
-      ></textarea
-      ><br /><br />
+      <!-- 顯示已填寫內容（主動區） -->
+      <div class="card mb-4">
+        <div class="card-header bg-info text-white">✅ 我自己填寫的訓練紀錄</div>
+        <div class="card-body">
+          {% if record and record.jump_type %}
+            <p><strong>體能訓練：</strong>{{ record.jump_type }}，{{ record.jump_count }} 次，跑步 {{ record.run_distance }}km / {{ record.run_time }}min，重量：{{ record.weight_sets }}，敏捷：{{ record.agility_type }}，備註：{{ record.agility_note }}</p>
+          {% else %}
+            <p class="text-muted">尚未填寫體能訓練</p>
+          {% endif %}
 
-      <button type="submit">送出訓練紀錄</button>
+          {% if record and record.technical_title %}
+            <p><strong>技巧訓練標題：</strong>{{ record.technical_title }}</p>
+            <ul>
+              {% for item in record.technical_items | from_json %}
+              <li>[{{ item.category }}] {{ item.topic }} ({{ item.duration_or_reps }}) - {{ item.focus }}</li>
+              {% endfor %}
+            </ul>
+            <p><strong>心得：</strong>{{ record.technical_feedback }}</p>
+          {% else %}
+            <p class="text-muted">尚未填寫技巧訓練</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- 最終送出 -->
+      <div class="text-center">
+        <button class="btn btn-primary" type="submit">儲存今日所有訓練紀錄</button>
+      </div>
+
+      <!-- Modal: 體能訓練 -->
+      <div class="modal fade" id="modalPhysical" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header"><h5>體能訓練紀錄</h5></div>
+            <div class="modal-body">
+              <div class="mb-2"><label>跳繩種類</label><input type="text" name="jump_type" class="form-control"></div>
+              <div class="mb-2"><label>跳繩次數</label><input type="number" name="jump_count" class="form-control"></div>
+              <div class="mb-2"><label>跑步距離</label><input type="text" name="run_distance" class="form-control"></div>
+              <div class="mb-2"><label>跑步時間</label><input type="text" name="run_time" class="form-control"></div>
+              <div class="mb-2"><label>重量訓練</label><input type="text" name="weight_sets" class="form-control"></div>
+              <div class="mb-2"><label>敏捷訓練</label><input type="text" name="agility_type" class="form-control"></div>
+              <div class="mb-2"><label>備註</label><textarea name="agility_note" class="form-control"></textarea></div>
+              <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">確認</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal: 技巧訓練 -->
+      <div class="modal fade" id="modalTechnical" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header"><h5>技巧訓練紀錄</h5></div>
+            <div class="modal-body">
+              <div class="mb-3"><label>訓練標題</label><input type="text" name="technical_title" class="form-control"></div>
+
+              <table class="table table-bordered" id="tech-table">
+                <thead><tr><th>類型</th><th>主題</th><th>次數/時間</th><th>重點</th><th>操作</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <select name="category[]" class="form-select">
+                        <option value="單球">單球</option>
+                        <option value="多球">多球</option>
+                        <option value="發球">發球</option>
+                      </select>
+                    </td>
+                    <td><input type="text" name="topic[]" class="form-control"></td>
+                    <td><input type="text" name="duration[]" class="form-control"></td>
+                    <td><input type="text" name="focus[]" class="form-control"></td>
+                    <td><button type="button" class="btn btn-danger btn-sm" onclick="removeTechRow(this)">刪除</button></td>
+                  </tr>
+                </tbody>
+              </table>
+              <button type="button" class="btn btn-secondary mb-3" onclick="addTechRow()">新增訓練項目</button>
+
+              <div class="mb-2"><label>心得</label><textarea name="technical_feedback" class="form-control"></textarea></div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="technical_completed" value="true">
+                <label class="form-check-label">我已完成此技巧訓練</label>
+              </div>
+              <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">確認</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </form>
+  </div>
 
-    <br />
-    <a href="/dashboard">返回主頁</a>
-  </body>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script>
+    flatpickr("#datePicker", {
+      dateFormat: "Y-m-d",
+      defaultDate: "{{ current_date }}",
+      onChange: function(selectedDates, dateStr, instance) {
+        window.location.href = "/training/today?date=" + dateStr;
+      }
+    });
+
+    function addTechRow() {
+      const row = document.querySelector('#tech-table tbody tr').cloneNode(true);
+      row.querySelectorAll('input').forEach(input => input.value = '');
+      row.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+      document.querySelector('#tech-table tbody').appendChild(row);
+    }
+    function removeTechRow(button) {
+      const row = button.closest('tr');
+      const tbody = document.querySelector('#tech-table tbody');
+      if (tbody.rows.length > 1) row.remove();
+    }
+  </script>
+</body>
 </html>
