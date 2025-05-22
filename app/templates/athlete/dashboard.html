@@ -130,8 +130,27 @@
     </div>
   </div>
 
- <!-- 🗒️ 教練公告 -->
  <h5 class="fw-bold mb-3">🗒️ 教練公告</h5>
+
+{% if announcements %}
+  <div class="announcement-grid mb-5">
+    {% for ann in announcements %}
+      <div class="announcement-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+          <small class="date">{{ ann.date.strftime('%Y-%m-%d') }}</small>
+          <span class="category-tag {{ ann.category }}">{{ ann.category }}</span>
+        </div>
+        <h6 class="title">{{ ann.title }}</h6>
+        <p class="content">{{ ann.content }}</p>
+        <div style="text-align: right; font-size: 0.8rem; color: #999;">
+          教練ID: {{ ann.coach_id }}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p>目前沒有公告。</p>
+{% endif %}
 
  
 

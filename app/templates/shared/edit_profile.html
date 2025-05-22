@@ -35,12 +35,12 @@
             font-weight: bold;
         }
 
-        textarea {
+        input, textarea, select {
             width: 100%;
             padding: 10px;
             border-radius: 6px;
             border: 1px solid #ccc;
-            resize: vertical;
+            box-sizing: border-box;
         }
 
         input[type="file"] {
@@ -80,9 +80,31 @@
 </head>
 <body>
     <div class="form-card">
-        <h1>編輯個人自介</h1>
+        <h1>編輯個人資料</h1>
 
         <form method="POST" enctype="multipart/form-data">
+            <label for="full_name">姓名：</label>
+            <input type="text" name="full_name" id="full_name" value="{{ user.full_name }}">
+
+            <label for="birth_date">出生日期：</label>
+            <input type="date" name="birth_date" id="birth_date" value="{{ user.birth_date }}">
+
+            <label for="gender">性別：</label>
+            <select name="gender" id="gender">
+                <option value="男" {% if user.gender == '男' %}selected{% endif %}>男</option>
+                <option value="女" {% if user.gender == '女' %}selected{% endif %}>女</option>
+                <option value="其他" {% if user.gender == '其他' %}selected{% endif %}>其他</option>
+            </select>
+
+            <label for="height">身高（cm）：</label>
+            <input type="number" name="height" id="height" value="{{ user.height }}">
+
+            <label for="weight">體重（kg）：</label>
+            <input type="number" name="weight" id="weight" value="{{ user.weight }}">
+
+            <label for="region">居住地區：</label>
+            <input type="text" name="region" id="region" value="{{ user.region }}">
+
             <label for="bio">自我介紹：</label>
             <textarea name="bio" rows="5" id="bio">{{ user.bio }}</textarea>
 
