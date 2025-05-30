@@ -20,6 +20,18 @@
 
     <main class="container py-5">
       <h2 class="fw-bold mb-4">👥 出缺勤點名</h2>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
       <form method="POST" action="{{ url_for('coach.roll_call') }}">
         <div class="row mb-3">
           <div class="col-md-4">
@@ -47,14 +59,42 @@
               {% for athlete in athletes %}
               <tr>
                 <td>{{ loop.index }}</td>
-                <td>{{ athlete.name }}</td>
+                <td>{{ athlete.username }}</td>
                 <td>
-                  <input
-                    type="checkbox"
-                    name="present_{{ athlete.id }}"
-                    class="form-check-input"
-                    checked
-                  />
+                  <div class="form-check form-check-inline">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="attendance_{{ athlete.id }}"
+                      id="present_{{ athlete.id }}"
+                      value="present"
+                      required
+                      {% if request.form.get('attendance_' ~ athlete.id) == 'present' %}checked{% endif %}
+                    />
+                    <label class="form-check-label" for="present_{{ athlete.id }}">出席</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="attendance_{{ athlete.id }}"
+                      id="absent_{{ athlete.id }}"
+                      value="absent"
+                      {% if request.form.get('attendance_' ~ athlete.id) == 'absent' %}checked{% endif %}
+                    />
+                    <label class="form-check-label" for="absent_{{ athlete.id }}">缺席</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="attendance_{{ athlete.id }}"
+                      id="late_{{ athlete.id }}"
+                      value="late"
+                      {% if request.form.get('attendance_' ~ athlete.id) == 'late' %}checked{% endif %}
+                    />
+                    <label class="form-check-label" for="late_{{ athlete.id }}">遲到</label>
+                  </div>
                 </td>
               </tr>
               {% else %}

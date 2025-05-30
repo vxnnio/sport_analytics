@@ -4,6 +4,7 @@ from flask import Blueprint, render_template, request, redirect, url_for
 from datetime import datetime
 from app.database import get_db
 from app.models.announcement import Announcement
+from app.models.user import User  
 from flask_login import login_required
 from flask_login import current_user
 from app.database import SessionLocal
@@ -90,7 +91,14 @@ def delete_announcement(aid):
 
     return redirect(url_for("coach.announcements"))
 
-
 @coach_bp.route("/rollcall", methods=["GET"])
+@login_required
 def roll_call():
-    return render_template("coach/rollcall.html")
+    with get_db() as session:
+        athletes = session.query(User).filter_by(role='athlete').all()
+    today = datetime.today().strftime("%Y-%m-%d")
+    return render_template(
+        "coach/rollcall.html",
+        athletes=athletes,
+        today=today
+    )
