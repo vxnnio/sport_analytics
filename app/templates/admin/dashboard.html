@@ -68,7 +68,8 @@
 
   <div class="row g-4">
 
-<!-- 使用者管理 -->
+
+    <!-- 系統設定 -->
 <div class="col-md-6 col-lg-4">
     <div class="card card-yellow h-100 text-center p-3 shadow-sm">
       <div style="display: flex; align-items: center; gap: 16px; padding: 20px; background-color: #f8f9fa; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);">
@@ -78,14 +79,17 @@
              style="border-radius: 50%; object-fit: cover; border: 2px solid #dee2e6;">
         
         <div>
-            <h5 style="margin: 0 0 6px; font-weight: bold;">👤 {{ current_user.username }}</h5>
-            <p style="margin: 0 0 6px; color: #6c757d;">角色：{{ current_user.role }}</p>
-            <small style="color: #adb5bd;">上次登入：2025/04/11</small>
+          <div class="icon-circle fs-2 mb-3"></div>
+          <h5 class="fw-bold">使用者管理</h5>
+          <p class="text-muted small">管理使用者權限</p>
         </div>
-    </div>
+  
+        <div class="d-grid gap-2 mt-3">
+          <a href="/admin/management" class="btn btn-yellow">使用者管理</a>
+        </div>
+      </div>
     </div>
   </div>
-    
     <!-- 系統設定 -->
 <div class="col-md-6 col-lg-4">
     <div class="card card-yellow h-100 text-center p-3 shadow-sm">
