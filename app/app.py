@@ -10,6 +10,7 @@ from app.routes.main import main_bp
 from app.routes.profile import profile_bp
 from app.routes.training import training_bp
 from app.routes.evaluation import evaluation_bp
+from app.routes.athlete import athlete_bp
 from app.models import User
 from app.models.announcement import Announcement
 from dotenv import load_dotenv
@@ -34,6 +35,7 @@ def create_app():
     app.register_blueprint(main_bp)
     app.register_blueprint(training_bp,url_prefix='/training')
     app.register_blueprint(evaluation_bp, url_prefix='/evaluation')
+    app.register_blueprint(athlete_bp)
     
     
     
