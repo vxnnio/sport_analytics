@@ -29,7 +29,11 @@ def login():
                     if user.role == 'coach':
                         return redirect(url_for('coach.dashboard'))
                     elif user.role == 'athlete':
-                        return redirect(url_for('auth.dashboard'))
+                        if user.full_name:  # 也可以用 birth_date 或其他欄位來判斷
+                            return redirect(url_for('auth.dashboard'))
+                        else:
+                            return redirect(url_for('profile.edit_profile'))
+
                     elif user.role == 'admin':
                         return redirect(url_for('admin.admin_dashboard'))
                     else:

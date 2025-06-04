@@ -23,30 +23,50 @@ def view_profile():
 @login_required
 def edit_profile():
     if request.method == 'POST':
+        # 接收表單資料
+        full_name = request.form.get('full_name')
+        birth_date = request.form.get('birth_date')  # yyyy-mm-dd 格式
+        gender = request.form.get('gender')
+        height = request.form.get('height')
+        weight = request.form.get('weight')
+        region = request.form.get('region')
         bio = request.form.get('bio')
         file = request.files.get('profile_pic')
 
         db = SessionLocal()
         user = db.query(User).filter(User.id == current_user.id).first()
 
+        # 更新文字欄位
+        if full_name:
+            user.full_name = full_name
+        if birth_date:
+            user.birth_date = birth_date
+        if gender:
+            user.gender = gender
+        if height:
+            user.height = int(height) if height else None
+        if weight:
+            user.weight = int(weight) if weight else None
+        if region:
+            user.region = region
         if bio:
             user.bio = bio
 
+        # 上傳圖片
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
 
-            # 使用 Flask 實際根目錄計算上傳路徑
             upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'profile_pics')
             os.makedirs(upload_folder, exist_ok=True)
 
             filepath = os.path.join(upload_folder, filename)
             file.save(filepath)
 
-            # 儲存在資料庫中的是相對於 static 的路徑，供 url_for 使用
             user.profile_pic = f'uploads/profile_pics/{filename}'
 
         db.commit()
         db.close()
+
         flash('更新成功')
         return redirect(url_for('profile.view_profile'))
 

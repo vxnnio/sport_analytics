@@ -5,7 +5,12 @@ from datetime import datetime
 import json
 
 from app.models.training import Training
-from app.database import get_db
+from datetime import datetime
+from app.models.evaluation import Evaluation # ✅ 新增這行
+from app.models.announcement import Announcement
+from app.database import get_db  # 引入 get_db
+from app.database import SessionLocal
+import json
 
 training_bp = Blueprint('training', __name__, url_prefix='/training')
 
@@ -14,65 +19,84 @@ training_bp = Blueprint('training', __name__, url_prefix='/training')
 def training_today():
     selected_date = request.args.get('date')
     current_date = selected_date or datetime.today().strftime('%Y-%m-%d')
+    date_obj = datetime.strptime(current_date, "%Y-%m-%d").date()
 
     with get_db() as db:
-        record = db.query(Training).filter_by(user_id=current_user.id, date=current_date).first()
+        record = db.query(Training).filter_by(user_id=current_user.id, date=date_obj).first()
 
     return render_template('athlete/upload.html', current_date=current_date, record=record)
 
+
 @training_bp.route('/today/save', methods=['POST'])
 @login_required
-def training_today_save():
-    date_str = request.form.get('selected_date')
+def save_today_training():
+    db = SessionLocal()
 
-    with get_db() as db:
-        record = db.query(Training).filter_by(user_id=current_user.id, date=date_str).first()
+    try:
+        selected_date = request.form.get("selected_date")
+        date_obj = datetime.strptime(selected_date, "%Y-%m-%d").date()
+
+        record = db.query(Training).filter_by(user_id=current_user.id, date=date_obj).first()
+
         if not record:
-            record = Training(user_id=current_user.id, date=date_str)
+            record = Training(user_id=current_user.id, date=date_obj)
 
-        # 教練派發完成勾選
-        record.coach_physical_done = 'coach_physical_done' in request.form
-        record.coach_technical_done = 'coach_technical_done' in request.form
-
-        # 主動體能訓練（含空值處理）
-        record.jump_type = request.form.get("jump_type") or None
-        jump_count_raw = request.form.get("jump_count")
-        record.jump_count = int(jump_count_raw) if jump_count_raw and jump_count_raw.strip().isdigit() else None
-
-        run_distance_raw = request.form.get("run_distance")
-        record.run_distance = float(run_distance_raw) if run_distance_raw and run_distance_raw.strip() else None
-
-        run_time_raw = request.form.get("run_time")
-        record.run_time = float(run_time_raw) if run_time_raw and run_time_raw.strip() else None
-
-        record.weight_sets = request.form.get("weight_sets") or None
-        record.agility_type = request.form.get("agility_type") or None
-        record.agility_note = request.form.get("agility_note") or None
-
-        # 主動技巧訓練
-        record.technical_title = request.form.get("technical_title") or None
-        record.technical_feedback = request.form.get("technical_feedback") or None
+        record.jump_type = request.form.get("jump_type")
+        record.jump_count = request.form.get("jump_count")
+        record.run_distance = request.form.get("run_distance")
+        record.run_time = request.form.get("run_time")
+        record.weight_sets = request.form.get("weight_sets")
+        record.agility_type = request.form.get("agility_type")
+        record.agility_note = request.form.get("agility_note")
+        
+        record.technical_title = request.form.get("technical_title") or record.technical_title
+        record.technical_feedback = request.form.get("technical_feedback") or record.technical_feedback
         record.technical_completed = request.form.get("technical_completed") == "true"
 
-        # 技巧項目 JSON 組裝
-        items = []
-        categories = request.form.getlist('category[]')
-        topics = request.form.getlist('topic[]')
-        durations = request.form.getlist('duration[]')
-        focuses = request.form.getlist('focus[]')
+        categories = request.form.getlist("category[]")
+        topics = request.form.getlist("topic[]")
+        durations = request.form.getlist("duration[]")
+        focuses = request.form.getlist("focus[]")
 
-        for i in range(len(categories)):
-            if topics[i].strip():
-                items.append({
-                    "category": categories[i],
-                    "topic": topics[i],
-                    "duration_or_reps": durations[i],
-                    "focus": focuses[i]
+        technical_items = []
+        for cat, top, dur, foc in zip(categories, topics, durations, focuses):
+            if top.strip():
+                technical_items.append({
+                    "category": cat,
+                    "topic": top,
+                    "duration_or_reps": dur,
+                    "focus": foc
                 })
-        record.technical_items = json.dumps(items, ensure_ascii=False)
+        if technical_items:
+            record.technical_items = json.dumps(technical_items)
+
+        record.coach_physical_done = request.form.get("coach_physical_done") == "on"
+        record.coach_technical_done = request.form.get("coach_technical_done") == "on"
 
         db.add(record)
         db.commit()
+        flash("今日訓練已成功儲存", "success")
 
-    flash("✅ 今日訓練已儲存")
-    return redirect(url_for('training.training_today', date=date_str))
+    except Exception as e:
+        db.rollback()
+        import logging
+        logging.error(f"儲存錯誤，日期: {selected_date}, 用戶ID: {current_user.id}, 錯誤: {e}")
+        flash(f"儲存錯誤：{e}", "danger")
+
+    finally:
+        db.close()
+
+    return redirect(url_for("training.training_today", date=selected_date))
+
+
+# Jinja2 filter 註冊
+import json
+@training_bp.app_template_filter('from_json')
+def from_json(value):
+    if value:
+        return json.loads(value)
+    return []
+
+
+
+

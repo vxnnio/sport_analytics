@@ -84,12 +84,15 @@
       <img src="static/logo.png" alt="Logo" height="40">
     </a>
     <div class="collapse navbar-collapse">
-      <ul class="navbar-nav ms-auto align-items-center">
-        <li class="nav-item">
-          <a class="nav-link fw-bold text-warning" href="#">常見問題 Q&A</a>
-        </li>
-      </ul>
-    </div>
+  <ul class="navbar-nav ms-auto align-items-center">
+    <li class="nav-item me-3">
+      <a class="nav-link fw-bold text-warning" href="#">常見問題 Q&A</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link fw-bold text-warning" href="/profile/">個人資訊</a>
+    </li>
+  </ul>
+</div>
   </div>
 </nav>
 
@@ -130,7 +133,6 @@
     </div>
   </div>
 
- <!-- 🗒️ 教練公告 -->
  <h5 class="fw-bold mb-3">🗒️ 教練公告</h5>
 
 {% if announcements %}
@@ -175,20 +177,20 @@
       <div class="card card-yellow card-hover h-100">
         <div class="card-body text-center d-flex flex-column align-items-center">
           <div class="icon-circle">📤</div>
-           <h6 class="fw-bold mt-3">今日訓練紀錄</h6>
-           <p class="text-muted small">被動訓練查看 + 主動訓練填寫。</p>
-           <a href="{{ url_for('training.training_today') }}" class="btn btn-yellow w-100 py-2 mt-auto">前往紀錄</a>
+          <h6 class="fw-bold mt-3">上傳訓練資料</h6>
+          <p class="text-muted small">整合裝置資料，管理訓練數據。</p>
+          <a href="/training/today" class="btn btn-yellow w-100 py-2 mt-auto">上傳資料</a>
         </div>
     </div>
     </div>
-    <!-- 查看紀錄 -->
+    <!-- 點名紀錄 -->
     <div class="col-md-6">
       <div class="card card-yellow card-hover h-100">
         <div class="card-body text-center d-flex flex-column align-items-center">
-          <div class="icon-circle">📖</div>
-          <h6 class="fw-bold mt-3">查看訓練紀錄</h6>
-          <p class="text-muted small">檢視歷史紀錄與成長軌跡。</p>
-          <a href="/training/history" class="btn btn-yellow w-100 py-2 mt-auto">立即查看</a>
+          <div class="icon-circle">📅</div>
+          <h6 class="fw-bold mt-3">查看點名紀錄</h6>
+          <p class="text-muted small">記錄疲勞與恢復狀態。</p>
+          <a href="athlete/attendance" class="btn btn-yellow w-100 py-2 mt-auto">開始填寫</a>
         </div>
       </div>
     </div>
