@@ -1,50 +1,77 @@
-{% extends 'base.html' %} {% block title %}首頁 - 運動員系統{% endblock %} {%
-block content %}
+{% extends 'base.html' %}
+{% block title %}首頁 - 運動員系統{% endblock %}
+{% block content %}
 <section class="py-5 bg-white">
   <div class="container">
     <div class="row align-items-center">
+
       <!-- Left Text -->
       <div class="col-lg-6 mb-4 mb-lg-0">
         <span class="badge bg-warning text-dark mb-2">線上 Online</span>
-        <h1 class="fw-bold mb-3">運動員綜合管理系統</h1>
+        <h1 class="fw-bold mb-3 display-5">PingPro桌訓系統</h1>
 
-        <p class="text-danger small mb-1">
-          (2025.02.04 02:30)功能已經完成維護。
-        </p>
-        <p class="text-danger small mb-3">
-          (2024.12.19) 若有疑問請來信 marco@ctada.org.tw。
-        </p>
+        <p class="text-danger small mb-1">(2025.02.04 02:30)功能已經完成維護。</p>
+        <p class="text-danger small mb-3">(2024.12.19) 若有疑問請來信 marco@ctada.org.tw。</p>
 
         <p class="text-muted">
-          - 創造
-          <span class="text-warning fw-bold">公平 Fair</span> 的運動<br />
+          - 創造 <span class="text-warning fw-bold">公平 Fair</span> 的運動<br />
           - <span class="text-warning fw-bold">教練</span> 有責維持潔淨運動。
         </p>
 
         <!-- Login & Register Buttons -->
         <div class="d-flex gap-3 mt-4">
-          <a
-            href="{{ url_for('auth.login') }}"
-            class="btn btn-success px-4 py-2"
-            >登入</a
-          >
-          <a
-            href="{{ url_for('auth.register') }}"
-            class="btn btn-outline-dark px-4 py-2"
-            >註冊</a
-          >
+          <a href="{{ url_for('auth.login') }}" class="btn btn-success px-4 py-2">登入</a>
+          <a href="{{ url_for('auth.register') }}" class="btn btn-outline-dark px-4 py-2">註冊</a>
         </div>
       </div>
 
-      <!-- Right Image -->
-      <div class="col-lg-6 text-center">
-        <img
-          src="{{ url_for('static', filename='1.png') }}"
-          alt="系統插圖"
-          class="img-fluid"
-        />
+      <!-- Right News Carousel -->
+      <div class="col-lg-6">
+        <h4 class="mb-4 fw-bold">📢 最新新聞</h4>
+        <div id="newsCarousel" class="carousel slide" data-bs-ride="carousel">
+          <div class="carousel-inner border rounded shadow-sm bg-white text-center">
+
+            <!-- Item 1 -->
+            <div class="carousel-item active p-4">
+              <a href="https://www.mirrormedia.mg/story/20250527edi058" target="_blank" class="text-decoration-none text-dark">
+                <img src="{{ url_for('static', filename='news1.jpg') }}" class="img-fluid mb-3 rounded shadow-sm" style="max-height: 280px;" alt="新聞1">
+                <h5 class="fw-bold">🎉 柚香林萌勇奪世錦賽男雙亞軍！</h5>
+              </a>
+            </div>
+
+            <!-- Item 2 -->
+            <div class="carousel-item p-4">
+              <a href="https://sports.ltn.com.tw/news/breakingnews/5061135" target="_blank" class="text-decoration-none text-dark">
+                <img src="{{ url_for('static', filename='news2.jpg') }}" class="img-fluid mb-3 rounded shadow-sm" style="max-height: 280px;" alt="新聞2">
+                <h5 class="fw-bold">✨ 樊振東加入德甲聯賽！</h5>
+              </a>
+            </div>
+
+            <!-- Item 3 -->
+            <div class="carousel-item p-4">
+              <a href="https://sce.ntut.edu.tw/p/404-1034-144291.php" target="_blank" class="text-decoration-none text-dark">
+                <img src="{{ url_for('static', filename='news3.jpg') }}" class="img-fluid mb-3 rounded shadow-sm" style="max-height: 280px;" alt="新聞3">
+                <h5 class="fw-bold">🏓 2025桌球夏令營下週開始報名</h5>
+              </a>
+            </div>
+
+          </div>
+        </div>
       </div>
+
     </div>
   </div>
 </section>
+
+<!-- Carousel 初始化 Script -->
+<script>
+  const carouselElement = document.querySelector('#newsCarousel');
+  if (carouselElement) {
+    new bootstrap.Carousel(carouselElement, {
+      interval: 3500,
+      ride: 'carousel'
+    });
+  }
+</script>
 {% endblock %}
+

@@ -18,6 +18,12 @@ def dashboard():
     # 教練主控台，只顯示大按鈕（公告管理、點名）
     return render_template("coach/dashboard.html")
 
+coach_bp.route("/profile", methods=["GET"])
+@login_required
+def view_profile():
+    return render_template('coach/profile.html', user=current_user)
+
+
 
 @coach_bp.route("/announcements", methods=["GET"])
 @login_required
