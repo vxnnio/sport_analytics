@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <title>桌球語音助理 Demo</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #e0f7fa, #f1f8e9);
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      color: #004d40;
+      margin-bottom: 1.5rem;
+    }
+
+    #start-btn {
+      padding: 0.8rem 1.5rem;
+      font-size: 1.1rem;
+      background-color: #00796b;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+
+    #start-btn:hover {
+      background-color: #004d40;
+      transform: scale(1.05);
+    }
+
+    .card {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
+      margin-top: 2rem;
+      width: 90%;
+      max-width: 600px;
+    }
+
+    .card p {
+      font-size: 1.2rem;
+      color: #333;
+      margin: 0.5rem 0;
+    }
+
+    .label {
+      font-weight: bold;
+      color: #00796b;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 1rem;
+      }
+
+      #start-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>桌球語音助理 Demo</h1>
+  <button id="start-btn">🎤 開始說話</button>
+
+  <div class="card">
+    <p><span class="label">你說：</span><span id="user-text">（等待輸入中...）</span></p>
+    <p><span class="label">助理回覆：</span><span id="bot-text">（等待回應中...）</span></p>
+  </div>
+
+  <script>
+    const startBtn = document.getElementById('start-btn');
+    const userTextElem = document.getElementById('user-text');
+    const botTextElem = document.getElementById('bot-text');
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('您的瀏覽器不支援語音辨識');
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'zh-TW';
+    recognition.interimResults = false;
+
+    recognition.onresult = async (event) => {
+      const speechToText = event.results[0][0].transcript;
+      userTextElem.textContent = speechToText;
+
+      // 傳給後端 /chat 路由
+      const response = await fetch('/chatbot/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: speechToText }),
+      });
+      const data = await response.json();
+      botTextElem.textContent = data.reply;
+
+      // 文字轉語音
+      const utterance = new SpeechSynthesisUtterance(data.reply);
+      utterance.lang = 'zh-TW';
+      window.speechSynthesis.speak(utterance);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('語音辨識錯誤:', event.error);
+    };
+
+    startBtn.onclick = () => {
+      recognition.start();
+    };
+  </script>
+</body>
+</html>
