@@ -140,3 +140,33 @@ def roll_call():
             today=today
         )
 
+@coach_bp.route('/sleep_record', methods=['GET', 'POST'])
+def sleep_record():
+    from app.models import User  # 確保引入 User 模型
+    db = SessionLocal()
+
+    if request.method == 'POST':
+        record = HealthRecord(
+            athlete_id=request.form['athlete_id'],
+            sleep_start=request.form['sleep_start'],
+            sleep_end=request.form['sleep_end'],
+            created_by=current_user.id
+        )
+        db.add(record)
+        db.commit()
+        db.close()
+        flash("睡眠紀錄已新增", "success")
+        return redirect(url_for('coach.sleep_record'))
+
+    # ✅ 簡單取得所有選手（role = 'athlete'）
+    athletes = db.query(User).filter(User.role == 'athlete').all()
+    db.close()
+
+    return render_template('coach/sleep_record.html', athletes=athletes)
+
+
+
+
+
+
+

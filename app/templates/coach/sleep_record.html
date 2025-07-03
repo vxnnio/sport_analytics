@@ -1,0 +1,22 @@
+<form method="POST">
+  <div class="mb-3">
+    <label class="form-label">選擇選手</label>
+    <select class="form-select" name="athlete_id" required>
+      {% for athlete in athletes %}
+        <option value="{{ athlete.id }}">{{ athlete.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">入睡時間</label>
+    <input type="time" name="sleep_start" class="form-control" required>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">起床時間</label>
+    <input type="time" name="sleep_end" class="form-control" required>
+  </div>
+
+  <button type="submit" class="btn btn-primary">儲存紀錄</button>
+</form>
