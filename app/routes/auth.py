@@ -27,7 +27,10 @@ def login():
 
                     # 根據角色重定向到不同的頁面
                     if user.role == 'coach':
-                        return redirect(url_for('coach.dashboard'))
+                        if user.full_name:  # 假設你用 full_name 判斷資料是否已填
+                            return redirect(url_for('coach.dashboard'))
+                        else:
+                            return redirect(url_for('profile.edit_profile'))
                     elif user.role == 'athlete':
                         if user.full_name:  # 也可以用 birth_date 或其他欄位來判斷
                             return redirect(url_for('auth.dashboard'))

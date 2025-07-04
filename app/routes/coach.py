@@ -139,6 +139,9 @@ def roll_call():
             athletes=athletes,
             today=today
         )
+        
+
+
 
 @coach_bp.route('/sleep_record', methods=['GET', 'POST'])
 def sleep_record():

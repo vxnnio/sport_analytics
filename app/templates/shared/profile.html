@@ -74,7 +74,14 @@
         <p><strong>自我介紹：</strong><br>{{ user.bio }}</p>
 
         <a href="{{ url_for('profile.edit_profile') }}" class="btn">✏️ 編輯個人資料</a>
-        <a href="{{ url_for('main.index') }}" class="btn">🏠 返回主頁</a>
+        {% if current_user.role == 'coach' %}
+            <a href="{{ url_for('coach.dashboard') }}" class="btn">🏠 返回主頁</a>
+        {% elif current_user.role == 'athlete' %}
+            <a href="{{ url_for('main.index') }}" class="btn">🏠 返回主頁</a>
+        {% else %}
+            <a href="{{ url_for('main.index') }}" class="btn">🏠 返回主頁</a>
+        {% endif %}
+
     </div>
 </body>
 </html>
