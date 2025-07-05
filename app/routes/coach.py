@@ -151,6 +151,7 @@ def sleep_record():
     if request.method == 'POST':
         record = HealthRecord(
             athlete_id=request.form['athlete_id'],
+            record_date=request.form['record_date'],
             sleep_start=request.form['sleep_start'],
             sleep_end=request.form['sleep_end'],
             created_by=current_user.id

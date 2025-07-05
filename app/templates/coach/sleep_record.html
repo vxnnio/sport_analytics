@@ -1,22 +1,44 @@
-<form method="POST">
-  <div class="mb-3">
-    <label class="form-label">選擇選手</label>
-    <select class="form-select" name="athlete_id" required>
-      {% for athlete in athletes %}
-        <option value="{{ athlete.id }}">{{ athlete.name }}</option>
-      {% endfor %}
-    </select>
-  </div>
+<div class="container mt-5" style="max-width: 600px;">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">新增睡眠紀錄</h5>
+    </div>
+    <div class="card-body">
+      <form method="POST">
+        <!-- 選擇選手 -->
+        <div class="mb-3">
+          <label class="form-label">選擇選手</label>
+          <select class="form-select" name="athlete_id" required>
+            <option value="" disabled selected>請選擇選手</option>
+            {% for athlete in athletes %}
+              <option value="{{ athlete.id }}">{{ athlete.username }}</option>
+            {% endfor %}
+          </select>
+        </div>
 
-  <div class="mb-3">
-    <label class="form-label">入睡時間</label>
-    <input type="time" name="sleep_start" class="form-control" required>
-  </div>
+        <!-- 紀錄日期 -->
+        <div class="mb-3">
+          <label class="form-label">紀錄日期</label>
+          <input type="date" name="record_date" class="form-control" required>
+        </div>
 
-  <div class="mb-3">
-    <label class="form-label">起床時間</label>
-    <input type="time" name="sleep_end" class="form-control" required>
-  </div>
+        <!-- 入睡時間 -->
+        <div class="mb-3">
+          <label class="form-label">入睡時間</label>
+          <input type="time" name="sleep_start" class="form-control" required>
+        </div>
 
-  <button type="submit" class="btn btn-primary">儲存紀錄</button>
-</form>
+        <!-- 起床時間 -->
+        <div class="mb-3">
+          <label class="form-label">起床時間</label>
+          <input type="time" name="sleep_end" class="form-control" required>
+        </div>
+
+        <div class="d-grid">
+          <button type="submit" class="btn btn-primary">儲存紀錄</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
