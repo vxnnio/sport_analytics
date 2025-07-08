@@ -145,28 +145,87 @@ def roll_call():
 
 @coach_bp.route('/sleep_record', methods=['GET', 'POST'])
 def sleep_record():
-    from app.models import User  # 確保引入 User 模型
+    from app.models import User, SleepRecord
+    from datetime import datetime
     db = SessionLocal()
-
+    
+    # 處理 POST 表單送出（新增紀錄）
     if request.method == 'POST':
-        record = HealthRecord(
-            athlete_id=request.form['athlete_id'],
-            record_date=request.form['record_date'],
-            sleep_start=request.form['sleep_start'],
-            sleep_end=request.form['sleep_end'],
-            created_by=current_user.id
-        )
-        db.add(record)
-        db.commit()
+        athlete_id = request.form['athlete_id']
+        record_date = request.form['record_date']
+        sleep_start = request.form['sleep_start']
+        sleep_end = request.form['sleep_end']
+        
+        # 防止重複新增
+        existing = db.query(SleepRecord).filter_by(
+            athlete_id=athlete_id,
+            record_date=record_date
+        ).first()
+        if existing:
+            flash("此選手在該日期已填寫過睡眠紀錄", "warning")
+        else:
+            record = SleepRecord(
+                athlete_id=athlete_id,
+                record_date=record_date,
+                sleep_start=sleep_start,
+                sleep_end=sleep_end,
+                created_by=current_user.id
+            )
+            db.add(record)
+            db.commit()
+            flash("睡眠紀錄已新增", "success")
+        
         db.close()
-        flash("睡眠紀錄已新增", "success")
         return redirect(url_for('coach.sleep_record'))
-
-    # ✅ 簡單取得所有選手（role = 'athlete'）
+    
+    # GET 方法：查詢選項
+    athlete_id = request.args.get('athlete_id')
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    
     athletes = db.query(User).filter(User.role == 'athlete').all()
-    db.close()
+    
+    # 查詢紀錄
+    query = db.query(SleepRecord).join(
+        User, SleepRecord.athlete_id == User.id
+    ).order_by(SleepRecord.record_date.desc())
+    
+    if athlete_id:
+        query = query.filter(SleepRecord.athlete_id == athlete_id)
+    if start_date:
+        query = query.filter(SleepRecord.record_date >= start_date)
+    if end_date:
+        query = query.filter(SleepRecord.record_date <= end_date)
+    
+    records = query.all()
 
-    return render_template('coach/sleep_record.html', athletes=athletes)
+    # ✅ 合併日期與時間為 datetime
+    for r in records:
+        try:
+            # sleep_start/end 是字串如 "22:30"，需轉為 datetime.time
+            start_time = datetime.strptime(r.sleep_start, "%H:%M").time()
+            end_time = datetime.strptime(r.sleep_end, "%H:%M").time()
+            
+            # 合併成完整 datetime 方便前端顯示
+            r.sleep_start_dt = datetime.combine(r.record_date, start_time)
+            r.sleep_end_dt = datetime.combine(r.record_date, end_time)
+        except Exception as e:
+            r.sleep_start_dt = None
+            r.sleep_end_dt = None
+            print(f"時間格式錯誤：{e}")  # 可視情況移除
+
+    db.close()
+    
+    return render_template(
+        'coach/sleep_record.html',
+        athletes=athletes,
+        records=records,
+        selected_athlete=athlete_id,
+        start_date=start_date,
+        end_date=end_date
+    )
+
+
 
 
 

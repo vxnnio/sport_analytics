@@ -14,6 +14,7 @@ from app.routes.athlete import athlete_bp
 from app.routes.chat import chat_bp
 from app.models import User
 from app.models.announcement import Announcement
+from app.models.sleep_record import SleepRecord 
 from dotenv import load_dotenv
 
 

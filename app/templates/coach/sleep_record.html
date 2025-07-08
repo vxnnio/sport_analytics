@@ -1,44 +1,129 @@
-<div class="container mt-5" style="max-width: 600px;">
-  <div class="card shadow">
-    <div class="card-header bg-primary text-white">
-      <h5 class="mb-0">新增睡眠紀錄</h5>
+<div class="container mt-5">
+  <div class="row">
+
+    <!-- 📝 左側：新增睡眠紀錄 -->
+    <div class="col-md-6">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">新增睡眠紀錄🖊</h5>
+        </div>
+        <div class="card-body">
+          <form method="POST">
+            <div class="mb-3">
+              <label class="form-label">選擇選手</label>
+              <select class="form-select" name="athlete_id" required>
+                <option value="" disabled selected>請選擇選手</option>
+                {% for athlete in athletes %}
+                  <option value="{{ athlete.id }}">{{ athlete.username }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">紀錄日期</label>
+              <input type="date" name="record_date" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">入睡時間</label>
+              <input type="time" name="sleep_start" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">起床時間</label>
+              <input type="time" name="sleep_end" class="form-control" required>
+            </div>
+
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary">儲存紀錄</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
-    <div class="card-body">
-      <form method="POST">
-        <!-- 選擇選手 -->
-        <div class="mb-3">
-          <label class="form-label">選擇選手</label>
-          <select class="form-select" name="athlete_id" required>
-            <option value="" disabled selected>請選擇選手</option>
-            {% for athlete in athletes %}
-              <option value="{{ athlete.id }}">{{ athlete.username }}</option>
-            {% endfor %}
-          </select>
-        </div>
 
-        <!-- 紀錄日期 -->
-        <div class="mb-3">
-          <label class="form-label">紀錄日期</label>
-          <input type="date" name="record_date" class="form-control" required>
+    <!-- 📊 右側：查詢紀錄 -->
+    <div class="col-md-6">
+      <div class="card shadow">
+        <div class="card-header bg-secondary text-white">
+          <h5 class="mb-0">查詢睡眠紀錄📜</h5>
         </div>
+        <div class="card-body">
 
-        <!-- 入睡時間 -->
-        <div class="mb-3">
-          <label class="form-label">入睡時間</label>
-          <input type="time" name="sleep_start" class="form-control" required>
-        </div>
+          <!-- 🔙 回首頁按鈕 -->
+          <div class="mb-3 text-end">
+            <a href="{{ url_for('coach.dashboard') }}" class="btn btn-outline-primary">
+              ← 回到教練首頁
+            </a>
+          </div>
 
-        <!-- 起床時間 -->
-        <div class="mb-3">
-          <label class="form-label">起床時間</label>
-          <input type="time" name="sleep_end" class="form-control" required>
-        </div>
+          <!-- 查詢表單 -->
+          <form method="GET" action="{{ url_for('coach.sleep_record') }}" class="row g-2 mb-3">
+            <div class="col-12">
+              <label class="form-label">選擇選手</label>
+              <select class="form-select" name="athlete_id">
+                <option value="">全部選手</option>
+                {% for athlete in athletes %}
+                  <option value="{{ athlete.id }}">{{ athlete.username }}</option>
+                {% endfor %}
+              </select>
+            </div>
 
-        <div class="d-grid">
-          <button type="submit" class="btn btn-primary">儲存紀錄</button>
+            <div class="col-md-6">
+              <label class="form-label">起始日期</label>
+              <input type="date" name="start_date" class="form-control">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">結束日期</label>
+              <input type="date" name="end_date" class="form-control">
+            </div>
+
+            <div class="col-12">
+              <button type="submit" class="btn btn-outline-secondary w-100">查詢</button>
+            </div>
+          </form>
+
+          <!-- 查詢結果表格 -->
+          {% if records %}
+            <div class="table-responsive">
+              <table class="table table-bordered table-sm align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>日期</th>
+                    <th>入睡</th>
+                    <th>起床</th>
+                    <th>睡眠時數</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for r in records %}
+                    <tr>
+                      <td>{{ r.record_date }}</td>
+                      <td>{{ r.sleep_start }}</td>
+                      <td>{{ r.sleep_end }}</td>
+                      <td>
+                        {% if r.sleep_start_dt and r.sleep_end_dt %}
+                          {% set duration = r.sleep_end_dt - r.sleep_start_dt %}
+                          {{ duration.seconds // 3600 }} 小時 {{ (duration.seconds % 3600) // 60 }} 分鐘
+                        {% else %}
+                          無法計算
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <p class="text-muted">尚無符合的紀錄。</p>
+          {% endif %}
+
         </div>
-      </form>
+      </div>
     </div>
+
   </div>
 </div>
+
 
