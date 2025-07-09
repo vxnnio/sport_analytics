@@ -32,12 +32,12 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    user_text = event.message.text.lower()
+    user_text = event.message.text.lower().strip()
 
     if "公告" in user_text:
         reply = get_announcements()
     else:
-        reply = "請輸入「公告」以查看最新公告"
+        reply = "請輸入「公告」或「出席」來查詢資訊"
 
     line_bot_api.reply_message(
         event.reply_token,
@@ -45,7 +45,7 @@ def handle_message(event):
     )
 
 def get_announcements():
-    url = "https://8d9e-1-160-104-101.ngrok-free.app/coach/api/announcements"
+    url = "https://4fd2-2001-b011-3012-f2f3-4482-8fb1-321e-5790.ngrok-free.app/coach/api/announcements"
     try:
         res = requests.get(url)
         if res.status_code == 200:
