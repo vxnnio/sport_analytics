@@ -10,6 +10,8 @@ from app.models.attendance import Attendance
 from flask_login import login_required
 from flask_login import current_user
 from app.database import SessionLocal
+from flask import jsonify
+from app.models import Announcement
 
 
 
@@ -232,4 +234,25 @@ def sleep_record():
 
 
 
+
+@coach_bp.route("/api/announcements", methods=["GET"])
+def api_announcements():
+    with get_db() as session:
+        announcements = (
+            session.query(Announcement)
+            .order_by(Announcement.date.desc())
+            .limit(3)  # 最多回傳 3 則
+            .all()
+        )
+
+        result = [
+            {
+                "title": a.title,
+                "content": a.content,
+                "created_at": a.date.strftime("%Y-%m-%d")
+            }
+            for a in announcements
+        ]
+
+        return jsonify(result)
 
