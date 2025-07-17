@@ -16,6 +16,8 @@ from app.routes.line_bot import line_bp
 from app.models import User
 from app.models.announcement import Announcement
 from app.models.sleep_record import SleepRecord 
+from app.routes.stress_evaluate import stress_bp
+
 from dotenv import load_dotenv
 
 
@@ -39,6 +41,7 @@ def create_app():
     app.register_blueprint(training_bp,url_prefix='/training')
     app.register_blueprint(evaluation_bp, url_prefix='/evaluation')
     app.register_blueprint(athlete_bp)
+    app.register_blueprint(stress_bp, url_prefix='/stress')
     
     
     

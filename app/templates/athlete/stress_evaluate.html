@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>壓力評估表單</title>
+  <style>
+    body {
+      font-family: "Noto Sans TC", sans-serif;
+      line-height: 1.8;
+      margin: 20px;
+    }
+    fieldset {
+      border: 1px solid #ccc;
+      margin-bottom: 20px;
+      padding: 10px;
+    }
+    legend {
+      font-weight: bold;
+    }
+    label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+    .options label {
+      display: inline-block;
+      margin-right: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>對於這場球賽...</h2>
+  <p>請您依據下列各題，圈選出<strong>現在的真實感覺</strong></p>
+
+  <form action="/stress/evaluate" method="POST">
+    <fieldset>
+      <legend>感覺強度</legend>
+      <p>請選擇每題的感覺強度：</p>
+      <ul>
+        <li>1 = 一點感覺也沒有</li>
+        <li>2 = 有一點感覺</li>
+        <li>3 = 稍強的感覺</li>
+        <li>4 = 強烈感覺</li>
+      </ul>
+
+      <ol>
+        <li>
+          <label>我覺得緊張不安。</label>
+          <div class="options">
+            <label><input type="radio" name="q1" value="1" required> 1</label>
+            <label><input type="radio" name="q1" value="2"> 2</label>
+            <label><input type="radio" name="q1" value="3"> 3</label>
+            <label><input type="radio" name="q1" value="4"> 4</label>
+          </div>
+        </li>
+        <li>
+          <label>我擔心我可能無法在比賽中發揮應有的實力。</label>
+          <div class="options">
+            <label><input type="radio" name="q2" value="1" required> 1</label>
+            <label><input type="radio" name="q2" value="2"> 2</label>
+            <label><input type="radio" name="q2" value="3"> 3</label>
+            <label><input type="radio" name="q2" value="4"> 4</label>
+          </div>
+        </li>
+        <li>
+          <label>我覺得有自信。</label>
+          <div class="options">
+            <label><input type="radio" name="q3" value="1" required> 1</label>
+            <label><input type="radio" name="q3" value="2"> 2</label>
+            <label><input type="radio" name="q3" value="3"> 3</label>
+            <label><input type="radio" name="q3" value="4"> 4</label>
+          </div>
+        </li>
+        <li>
+          <label>我的身體有緊張的感覺。</label>
+          <div class="options">
+            <label><input type="radio" name="q4" value="1" required> 1</label>
+            <label><input type="radio" name="q4" value="2"> 2</label>
+            <label><input type="radio" name="q4" value="3"> 3</label>
+            <label><input type="radio" name="q4" value="4"> 4</label>
+          </div>
+        </li>
+        <li>
+          <label>我擔心輸掉比賽。</label>
+          <div class="options">
+            <label><input type="radio" name="q5" value="1" required> 1</label>
+            <label><input type="radio" name="q5" value="2"> 2</label>
+            <label><input type="radio" name="q5" value="3"> 3</label>
+            <label><input type="radio" name="q5" value="4"> 4</label>
+          </div>
+        </li>
+        <li>
+          <label>我覺得胃部緊繃的。</label>
+          <div class="options">
+            <label><input type="radio" name="q6" value="1" required> 1</label>
+            <label><input type="radio" name="q6" value="2"> 2</label>
+            <label><input type="radio" name="q6" value="3"> 3</label>
+            <label><input type="radio" name="q6" value="4"> 4</label>
+          </div>
+        </li>
+        <li>
+          <label>我有信心克服挑戰。</label>
+          <div class="options">
+            <label><input type="radio" name="q7" value="1" required> 1</label>
+            <label><input type="radio" name="q7" value="2"> 2</label>
+            <label><input type="radio" name="q7" value="3"> 3</label>
+            <label><input type="radio" name="q7" value="4"> 4</label>
+          </div>
+        </li>
+        <li>
+          <label>我擔心在壓力下表現失常。</label>
+          <div class="options">
+            <label><input type="radio" name="q8" value="1" required> 1</label>
+            <label><input type="radio" name="q8" value="2"> 2</label>
+            <label><input type="radio" name="q8" value="3"> 3</label>
+            <label><input type="radio" name="q8" value="4"> 4</label>
+          </div>
+        </li>
+        <li>
+          <label>我心跳加速。</label>
+          <div class="options">
+            <label><input type="radio" name="q9" value="1" required> 1</label>
+            <label><input type="radio" name="q9" value="2"> 2</label>
+            <label><input type="radio" name="q9" value="3"> 3</label>
+            <label><input type="radio" name="q9" value="4"> 4</label>
+          </div>
+        </li>
+        <li>
+          <label>我有信心表現良好。</label>
+          <div class="options">
+            <label><input type="radio" name="q10" value="1" required> 1</label>
+            <label><input type="radio" name="q10" value="2"> 2</label>
+            <label><input type="radio" name="q10" value="3"> 3</label>
+            <label><input type="radio" name="q10" value="4"> 4</label>
+          </div>
+        </li>
+        <li>
+          <label>我擔心表現不佳。</label>
+          <div class="options">
+            <label><input type="radio" name="q11" value="1" required> 1</label>
+            <label><input type="radio" name="q11" value="2"> 2</label>
+            <label><input type="radio" name="q11" value="3"> 3</label>
+            <label><input type="radio" name="q11" value="4"> 4</label>
+          </div>
+        </li>
+        <li>
+          <label>我覺得胃部有沉重的感覺。</label>
+          <div class="options">
+            <label><input type="radio" name="q12" value="1" required> 1</label>
+            <label><input type="radio" name="q12" value="2"> 2</label>
+            <label><input type="radio" name="q12" value="3"> 3</label>
+            <label><input type="radio" name="q12" value="4"> 4</label>
+          </div>
+        </li>
+        <li>
+          <label>我有信心，因為我想像得到我能達成自己的目標。</label>
+          <div class="options">
+            <label><input type="radio" name="q13" value="1" required> 1</label>
+            <label><input type="radio" name="q13" value="2"> 2</label>
+            <label><input type="radio" name="q13" value="3"> 3</label>
+            <label><input type="radio" name="q13" value="4"> 4</label>
+          </div>
+        </li>
+        <li>
+          <label>我擔心其他人會對我的表現感到失望。</label>
+          <div class="options">
+            <label><input type="radio" name="q14" value="1" required> 1</label>
+            <label><input type="radio" name="q14" value="2"> 2</label>
+            <label><input type="radio" name="q14" value="3"> 3</label>
+            <label><input type="radio" name="q14" value="4"> 4</label>
+          </div>
+        </li>
+        <li>
+          <label>我的手是濕冷的。</label>
+          <div class="options">
+            <label><input type="radio" name="q15" value="1" required> 1</label>
+            <label><input type="radio" name="q15" value="2"> 2</label>
+            <label><input type="radio" name="q15" value="3"> 3</label>
+            <label><input type="radio" name="q15" value="4"> 4</label>
+          </div>
+        </li>
+        <li>
+          <label>我有信心突破壓力。</label>
+          <div class="options">
+            <label><input type="radio" name="q16" value="1" required> 1</label>
+            <label><input type="radio" name="q16" value="2"> 2</label>
+            <label><input type="radio" name="q16" value="3"> 3</label>
+            <label><input type="radio" name="q16" value="4"> 4</label>
+          </div>
+        </li>
+        <li>
+          <label>我覺得身體是緊繃的。</label>
+          <div class="options">
+            <label><input type="radio" name="q17" value="1" required> 1</label>
+            <label><input type="radio" name="q17" value="2"> 2</label>
+            <label><input type="radio" name="q17" value="3"> 3</label>
+            <label><input type="radio" name="q17" value="4"> 4</label>
+          </div>
+        </li>
+      </ol>
+    </fieldset>
+
+    <button type="submit">提交</button>
+  </form>
+ <a href="/auth/dashboard">返回主頁</a>
+</body>
+</html>
