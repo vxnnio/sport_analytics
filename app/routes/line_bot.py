@@ -4,17 +4,17 @@ from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 import requests
 import os
-
-# 載入機密參數（.env 方式）
 from dotenv import load_dotenv
+from app.database import get_db
+from app.models.user import User
+from app.models.attendance import Attendance
+
 load_dotenv()
 
-# 替換成你從 LINE Developers 拿到的資料
 LINE_CHANNEL_ACCESS_TOKEN = 'N3vgXKPPqJYif6rTleXpxpvt05mvfxopvm9nO4VHinEuLwXIjLLenmQylu+vyaDmzyUlU8Jo/ANx0TgwQxoc+9NXAnUlaIWayeMV+6MZYxlaeVfUbMnnYiPMx+fzQ+zyKH8TORI1vN3A1QOu4eYZXQdB04t89/1O/w1cDnyilFU='
 LINE_CHANNEL_SECRET = '10f47ad2b6acfdbc1c3c3a602974ac2f'
 
 line_bp = Blueprint("line", __name__)
-
 line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
 
@@ -32,17 +32,54 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    user_text = event.message.text.lower().strip()
+    text = event.message.text.strip().lower()
+    line_id = event.source.user_id
 
-    if "公告" in user_text:
+    if text.startswith("綁定"):
+        username = text.replace("綁定", "").strip()
+        reply = bind_account(username, line_id)
+    elif "出席" in text:
+        reply = get_attendance_by_line_id(line_id)
+    elif "公告" in text:
         reply = get_announcements()
     else:
-        reply = "請輸入「公告」或「出席」來查詢資訊"
+        reply = "請輸入「公告」、「出席」或「綁定 <帳號>」"
 
     line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(text=reply)
     )
+
+def bind_account(username, line_id):
+    with get_db() as session:
+        user = session.query(User).filter_by(username=username).first()
+        if not user:
+            return "❌ 找不到該帳號"
+        user.line_user_id = line_id
+        session.commit()
+        return f"✅ 成功綁定帳號 {username}"
+
+def get_attendance_by_line_id(line_id):
+    with get_db() as session:
+        user = session.query(User).filter_by(line_user_id=line_id).first()
+        if not user:
+            return "⚠️ 請先綁定帳號，例如輸入：綁定 nekorin"
+
+        records = (
+            session.query(Attendance)
+            .filter_by(athlete_id=user.id)
+            .order_by(Attendance.date.desc())
+            .limit(5)
+            .all()
+        )
+
+        if not records:
+            return "📭 尚無出缺席紀錄"
+
+        msg = f"📋 {user.username} 的出缺席紀錄：\n"
+        for r in records:
+            msg += f"📅 {r.date}：{r.status}\n"
+        return msg
 
 def get_announcements():
     url = "https://4fd2-2001-b011-3012-f2f3-4482-8fb1-321e-5790.ngrok-free.app/coach/api/announcements"
