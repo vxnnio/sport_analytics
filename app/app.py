@@ -17,6 +17,8 @@ from app.models import User
 from app.models.announcement import Announcement
 from app.models.sleep_record import SleepRecord 
 from app.routes.stress_evaluate import stress_bp
+from app.models.stress_evaluate import StressEvaluate
+
 
 from dotenv import load_dotenv
 

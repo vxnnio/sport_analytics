@@ -1,12 +1,16 @@
 # app/routes/athlete.py
 
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, jsonify
 from flask_login import login_required, current_user
 from app.database import get_db
 from app.models.attendance import Attendance
-from flask import jsonify
 
 athlete_bp = Blueprint("athlete", __name__, url_prefix="/athlete")
+
+@athlete_bp.route("/dashboard", methods=["GET"])
+@login_required
+def dashboard():
+    return render_template("athlete/dashboard.html")
 
 @athlete_bp.route("/attendance", methods=["GET"])
 @login_required
@@ -37,6 +41,7 @@ def api_attendance(athlete_id):
             for r in records
         ]
         return jsonify(result)
+
 
 
 
