@@ -22,6 +22,8 @@ handler = WebhookHandler(LINE_CHANNEL_SECRET)
 def callback():
     signature = request.headers.get('X-Line-Signature')
     body = request.get_data(as_text=True)
+    print("Received body:", body)
+    print("Signature:", signature)
 
     try:
         handler.handle(body, signature)
@@ -76,13 +78,24 @@ def get_attendance_by_line_id(line_id):
         if not records:
             return "📭 尚無出缺席紀錄"
 
-        msg = f"📋 {user.username} 的出缺席紀錄：\n"
+        status_map = {
+            "present": "✅ 出席",
+            "absent": "❌ 缺席",
+            "late": "⏰ 遲到",
+            "leave": "📌 請假"
+        }
+
+        msg = f"📋 {user.username} 的最近出缺席紀錄：\n"
         for r in records:
-            msg += f"📅 {r.date}：{r.status}\n"
+            zh_status = status_map.get(r.status.lower(), r.status)
+            date_str = r.date.strftime("%Y/%m/%d")
+            msg += f"📅 {date_str}：{zh_status}\n"
+
+        return msg
         return msg
 
 def get_announcements():
-    url = "https://4fd2-2001-b011-3012-f2f3-4482-8fb1-321e-5790.ngrok-free.app/coach/api/announcements"
+    url = "https://de0692c0df9b.ngrok-free.app/coach/api/announcements"
     try:
         res = requests.get(url)
         if res.status_code == 200:
