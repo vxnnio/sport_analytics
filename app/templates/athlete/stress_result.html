@@ -1,0 +1,14 @@
+<!-- templates/athlete/stress_result.html -->
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>壓力評估結果</title>
+</head>
+<body>
+    <h2>壓力評估結果</h2>
+    <p><strong>總分：</strong>{{ total_score }}</p>
+    <p><strong>結果分析：</strong>{{ result }}</p>
+    <a href="{{ url_for('athlete.dashboard') }}">回到主頁</a>
+</body>
+</html>

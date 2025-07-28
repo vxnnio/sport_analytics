@@ -17,5 +17,6 @@ __all__ = [
     "Evaluation",
     "Training",
     "User",
-    "Attendance"
+    "Attendance",
+    "StressEvaluate"
 ]

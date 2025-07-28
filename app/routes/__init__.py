@@ -11,5 +11,5 @@ __all__ = ["coach_bp",
            "main_bp",
            "auth_bp",
            "admin_bp",
-           "profile_bp"
+           "profile_bp",
            "stress_bp"]
