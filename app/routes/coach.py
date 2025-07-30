@@ -12,6 +12,7 @@ from flask_login import current_user
 from app.database import SessionLocal
 from flask import jsonify
 from app.models import Announcement
+from app.models import StressEvaluate
 
 
 
@@ -256,3 +257,49 @@ def api_announcements():
 
         return jsonify(result)
 
+
+
+
+@coach_bp.route('/stress_query', methods=['GET', 'POST'])
+@login_required
+def stress_query():
+    db = SessionLocal()
+    athletes = db.query(User).filter(User.role == "athlete").all()
+    result = None
+    suggestion = ""
+    score = None  # 總分也一起傳給模板
+
+    if request.method == 'POST':
+        athlete_id = request.form.get("athlete_id")
+
+        result = (
+            db.query(StressEvaluate)
+            .filter(StressEvaluate.athlete_id == athlete_id)
+            .order_by(StressEvaluate.timestamp.desc())
+            .first()
+        )
+
+        if result:
+            # 計算壓力總分
+            score = sum([
+                result.q1, result.q2, result.q3, result.q4, result.q5, result.q6,
+                result.q7, result.q8, result.q9, result.q10, result.q11, result.q12,
+                result.q13, result.q14, result.q15, result.q16, result.q17
+            ])
+
+            # 根據分數給建議
+            if score <= 40:
+                suggestion = "壓力狀況良好，請持續保持！"
+            elif score <= 70:
+                suggestion = "壓力略高，建議適度放鬆與休息。"
+            else:
+                suggestion = "壓力過高，請儘速尋求協助或諮詢專業人員。"
+
+    db.close()
+    return render_template(
+        "coach/stress_record.html",
+        athletes=athletes,
+        result=result,
+        score=score,
+        suggestion=suggestion
+    )

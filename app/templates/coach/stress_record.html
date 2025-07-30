@@ -1,0 +1,22 @@
+<h2>選手壓力評估查詢</h2>
+
+<form method="POST">
+  <label>選擇選手：</label>
+  <select name="athlete_id" required>
+    {% for athlete in athletes %}
+      <option value="{{ athlete.id }}">{{ athlete.full_name }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit">查詢</button>
+</form>
+
+{% if result %}
+  <hr>
+  <h3>查詢結果：</h3>
+  <p><strong>日期：</strong>{{ result.timestamp.strftime("%Y-%m-%d %H:%M") }}</p>
+  <p><strong>壓力分數：</strong>{{ score }}</p>
+  <p><strong>建議：</strong>{{ suggestion }}</p>
+{% elif request.method == 'POST' %}
+  <p style="color:red;">此選手尚無壓力評估紀錄。</p>
+{% endif %}
+
