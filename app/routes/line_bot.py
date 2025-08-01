@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from app.database import get_db
 from app.models.user import User
 from app.models.attendance import Attendance
+from linebot.models import FlexSendMessage
 
 load_dotenv()
 
@@ -40,17 +41,23 @@ def handle_message(event):
     if text.startswith("綁定"):
         username = text.replace("綁定", "").strip()
         reply = bind_account(username, line_id)
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
+
     elif "出席" in text:
         reply = get_attendance_by_line_id(line_id)
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
+
     elif "公告" in text:
         reply = get_announcements()
-    else:
-        reply = "請輸入「公告」、「出席」或「綁定 <帳號>」"
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
 
-    line_bot_api.reply_message(
-        event.reply_token,
-        TextSendMessage(text=reply)
-    )
+    elif "評估表" in text:
+        flex_message = get_evaluation_card()
+        line_bot_api.reply_message(event.reply_token, flex_message)
+
+    else:
+        reply = "請輸入「公告」、「出席」、「評估表」或「綁定 <帳號>」"
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
 
 def bind_account(username, line_id):
     with get_db() as session:
@@ -110,3 +117,54 @@ def get_announcements():
             return "無法取得公告"
     except Exception as e:
         return f"錯誤：{str(e)}"
+
+def get_evaluation_card():
+    flex_content = {
+        "type": "bubble",
+        "hero": {
+            "type": "image",
+            "url": "https://scdn.line-apps.com/n/channel_devcenter/img/flexsnapshot/clip/clip1.jpg",
+            "size": "full",
+            "aspectRatio": "20:13",
+            "aspectMode": "cover"
+        },
+        "body": {
+            "type": "box",
+            "layout": "vertical",
+            "contents": [
+                {
+                    "type": "text",
+                    "text": "填寫訓練評估表",
+                    "weight": "bold",
+                    "size": "xl",
+                    "align": "center"
+                },
+                {
+                    "type": "text",
+                    "text": "請填寫最近的訓練評估紀錄",
+                    "size": "sm",
+                    "color": "#999999",
+                    "margin": "md",
+                    "align": "center"
+                }
+            ]
+        },
+        "footer": {
+            "type": "box",
+            "layout": "vertical",
+            "spacing": "sm",
+            "contents": [
+                {
+                    "type": "button",
+                    "style": "primary",
+                    "action": {
+                        "type": "uri",
+                        "label": "前往填寫",
+                        "uri": "https://de0692c0df9b.ngrok-free.app/evaluation/form"
+                    }
+                }
+            ]
+        }
+    }
+
+    return FlexSendMessage(alt_text="請填寫訓練評估表", contents=flex_content)
