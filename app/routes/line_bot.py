@@ -9,6 +9,30 @@ from app.database import get_db
 from app.models.user import User
 from app.models.attendance import Attendance
 from linebot.models import FlexSendMessage
+from apscheduler.schedulers.background import BackgroundScheduler
+from datetime import datetime
+import pytz
+
+# 啟用排程器（全域）
+scheduler = BackgroundScheduler(timezone="Asia/Taipei")
+
+def send_evaluation_card_to_all_users():
+    with get_db() as session:
+        users = session.query(User).filter(User.line_user_id.isnot(None)).all()
+
+    for user in users:
+        try:
+            message = get_evaluation_card()
+            line_bot_api.push_message(user.line_user_id, message)
+            print(f"[{datetime.now()}] 推播評估卡片給 {user.username}")
+        except Exception as e:
+            print(f"推播給 {user.username} 時出錯: {str(e)}")
+
+# 設定每天上午 9 點自動推播
+scheduler.add_job(send_evaluation_card_to_all_users, 'cron', hour=12, minute=30)
+
+# 啟動排程器（放在 create_app() 的地方會更安全）
+scheduler.start()
 
 load_dotenv()
 
@@ -42,6 +66,14 @@ def handle_message(event):
         username = text.replace("綁定", "").strip()
         reply = bind_account(username, line_id)
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
+        
+    elif text.startswith("綁定狀態"):
+        user = get_user_by_line_id(line_id)
+        if user:
+            reply = f"您已綁定帳號：{user.username}"
+        else:
+            reply = "您尚未綁定帳號，請輸入：綁定 <帳號>"
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
 
     elif "出席" in text:
         reply = get_attendance_by_line_id(line_id)
@@ -72,8 +104,11 @@ def get_attendance_by_line_id(line_id):
     with get_db() as session:
         user = session.query(User).filter_by(line_user_id=line_id).first()
         if not user:
-            return "⚠️ 請先綁定帳號，例如輸入：綁定 nekorin"
-
+            print("❌ LINE 使用者尚未綁定")
+            return "您尚未綁定帳號，請輸入：綁定 <帳號>"
+        else:
+            print(f"✅ 使用者已綁定：{user.username} (ID: {user.id})")
+            
         records = (
             session.query(Attendance)
             .filter_by(athlete_id=user.id)
@@ -101,8 +136,14 @@ def get_attendance_by_line_id(line_id):
         return msg
         return msg
 
+def get_user_by_line_id(line_id):
+    with get_db() as session:
+        user = session.query(User).filter_by(line_user_id=line_id).first()
+        return user
+
+
 def get_announcements():
-    url = "https://de0692c0df9b.ngrok-free.app/coach/api/announcements"
+    url = "https://14edbb0818c2.ngrok-free.app/coach/api/announcements"
     try:
         res = requests.get(url)
         if res.status_code == 200:
@@ -160,7 +201,7 @@ def get_evaluation_card():
                     "action": {
                         "type": "uri",
                         "label": "前往填寫",
-                        "uri": "https://de0692c0df9b.ngrok-free.app/evaluation/form"
+                        "uri": "https://14edbb0818c2.ngrok-free.app/evaluation/form"
                     }
                 }
             ]
