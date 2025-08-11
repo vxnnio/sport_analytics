@@ -1,121 +1,135 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
-  <title>桌球語音助理 Demo</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to right, #e0f7fa, #f1f8e9);
-      margin: 0;
-      padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+    <meta charset="UTF-8">
+    <title>桌球教學聊天機器人</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f3f4f6, #dbeafe);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
 
-    h1 {
-      color: #004d40;
-      margin-bottom: 1.5rem;
-    }
+        h1 {
+            margin-top: 30px;
+            color: #1e40af;
+        }
 
-    #start-btn {
-      padding: 0.8rem 1.5rem;
-      font-size: 1.1rem;
-      background-color: #00796b;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.3s, transform 0.2s;
-    }
+        #chat-box {
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 500px;
+            height: 500px;
+            margin: 20px 0;
+            padding: 15px;
+            overflow-y: auto;
+        }
 
-    #start-btn:hover {
-      background-color: #004d40;
-      transform: scale(1.05);
-    }
+        .msg {
+            margin: 10px 0;
+            padding: 10px 15px;
+            border-radius: 15px;
+            max-width: 80%;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
 
-    .card {
-      background-color: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      padding: 1.5rem;
-      margin-top: 2rem;
-      width: 90%;
-      max-width: 600px;
-    }
+        .user {
+            background-color: #dbeafe;
+            color: #1e3a8a;
+            align-self: flex-end;
+            margin-left: auto;
+        }
 
-    .card p {
-      font-size: 1.2rem;
-      color: #333;
-      margin: 0.5rem 0;
-    }
+        .bot {
+            background-color: #f0fdf4;
+            color: #065f46;
+            align-self: flex-start;
+            margin-right: auto;
+        }
 
-    .label {
-      font-weight: bold;
-      color: #00796b;
-    }
+        #input-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            width: 90%;
+            max-width: 500px;
+        }
 
-    @media (max-width: 600px) {
-      body {
-        padding: 1rem;
-      }
+        input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
 
-      #start-btn {
-        width: 100%;
-      }
-    }
-  </style>
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 10px;
+            background-color: #3b82f6;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #2563eb;
+        }
+    </style>
 </head>
 <body>
-  <h1>桌球語音助理 Demo</h1>
-  <button id="start-btn">🎤 開始說話</button>
+    <h1>桌球教學聊天機器人</h1>
+    <div id="chat-box"></div>
+    <div id="input-area">
+        <input type="text" id="user-input" placeholder="輸入訊息...">
+        <button onclick="sendMessage()">送出</button>
+    </div>
 
-  <div class="card">
-    <p><span class="label">你說：</span><span id="user-text">（等待輸入中...）</span></p>
-    <p><span class="label">助理回覆：</span><span id="bot-text">（等待回應中...）</span></p>
-  </div>
+    <script>
+        const input = document.getElementById("user-input");
 
-  <script>
-    const startBtn = document.getElementById('start-btn');
-    const userTextElem = document.getElementById('user-text');
-    const botTextElem = document.getElementById('bot-text');
+        input.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
 
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert('您的瀏覽器不支援語音辨識');
-    }
+        window.onload = () => {
+            input.focus();
+        };
 
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'zh-TW';
-    recognition.interimResults = false;
+        function sendMessage() {
+            const message = input.value.trim();
+            if (!message) return;
 
-    recognition.onresult = async (event) => {
-      const speechToText = event.results[0][0].transcript;
-      userTextElem.textContent = speechToText;
+            const chatBox = document.getElementById("chat-box");
+            chatBox.innerHTML += `<div class="msg user"><b>你:</b> ${message}</div>`;
 
-      // 傳給後端 /chat 路由
-      const response = await fetch('/chatbot/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: speechToText }),
-      });
-      const data = await response.json();
-      botTextElem.textContent = data.reply;
+            fetch("/chatbot/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: message })
+            })
+            .then(res => res.json())
+            .then(data => {
+                chatBox.innerHTML += `<div class="msg bot"><b>機器人:</b> ${data.reply}</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
 
-      // 文字轉語音
-      const utterance = new SpeechSynthesisUtterance(data.reply);
-      utterance.lang = 'zh-TW';
-      window.speechSynthesis.speak(utterance);
-    };
-
-    recognition.onerror = (event) => {
-      console.error('語音辨識錯誤:', event.error);
-    };
-
-    startBtn.onclick = () => {
-      recognition.start();
-    };
-  </script>
+            input.value = "";
+        }
+    </script>
 </body>
 </html>

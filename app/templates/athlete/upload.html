@@ -2,36 +2,56 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>今日訓練主頁</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
 </head>
 <body class="bg-light">
   <div class="container py-4">
     <h4>今日訓練主頁</h4>
 
+    <!-- Flash 訊息顯示 -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mt-3">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" role="alert">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
     <!-- 日期選擇器 -->
     <div class="mb-4">
       <label for="datePicker">選擇日期</label>
-      <input type="text" id="datePicker" class="form-control" value="{{ current_date }}">
+      <input type="text" id="datePicker" class="form-control" value="{{ current_date }}" />
     </div>
 
     <form method="POST" action="/training/today/save">
-      <input type="hidden" name="selected_date" value="{{ current_date }}">
+      <input type="hidden" name="selected_date" value="{{ current_date }}" />
 
       <!-- 被動：教練派發體能訓練 -->
       <div class="card mb-4">
         <div class="card-header">教練派發體能訓練</div>
         <div class="card-body">
           {% if record and record.coach_assigned_physical %}
-            <p>{{ record.coach_assigned_physical }}</p>
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" name="coach_physical_done" {% if record.coach_physical_done %}checked{% endif %}>
-              <label class="form-check-label">我已完成此體能訓練</label>
-            </div>
+          <p>{{ record.coach_assigned_physical }}</p>
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              name="coach_physical_done"
+              value="on"
+              {% if record.coach_physical_done %}checked{% endif %}
+            />
+            <label class="form-check-label">我已完成此體能訓練</label>
+          </div>
           {% else %}
-            <p class="text-muted">今日無派發體能訓練</p>
+          <p class="text-muted">今日無派發體能訓練</p>
           {% endif %}
         </div>
       </div>
@@ -41,25 +61,46 @@
         <div class="card-header">教練派發技巧訓練</div>
         <div class="card-body">
           {% if record and record.coach_assigned_technical %}
-            <ul>
-              {% for item in record.coach_assigned_technical | from_json %}
-                <li>[{{ item.category }}] {{ item.topic }} ({{ item.duration_or_reps }}) - {{ item.focus }}</li>
-              {% endfor %}
-            </ul>
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" name="coach_technical_done" {% if record.coach_technical_done %}checked{% endif %}>
-              <label class="form-check-label">我已完成此技巧訓練</label>
-            </div>
+          <ul>
+            {% for item in record.coach_assigned_technical | from_json %}
+            <li>[{{ item.category }}] {{ item.topic }} ({{ item.duration_or_reps }}) -
+              {{ item.focus }}</li>
+            {% endfor %}
+          </ul>
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              name="coach_technical_done"
+              value="on"
+              {% if record.coach_technical_done %}checked{% endif %}
+            />
+            <label class="form-check-label">我已完成此技巧訓練</label>
+          </div>
           {% else %}
-            <p class="text-muted">今日無派發技巧訓練</p>
+          <p class="text-muted">今日無派發技巧訓練</p>
           {% endif %}
         </div>
       </div>
 
       <!-- 主動填寫按鈕 -->
       <div class="d-grid gap-2 mb-3">
-        <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalPhysical">主動填寫：體能訓練紀錄</button>
-        <button class="btn btn-outline-success" type="button" data-bs-toggle="modal" data-bs-target="#modalTechnical">主動填寫：技巧訓練紀錄</button>
+        <button
+          class="btn btn-outline-primary"
+          type="button"
+          data-bs-toggle="modal"
+          data-bs-target="#modalPhysical"
+        >
+          主動填寫：體能訓練紀錄
+        </button>
+        <button
+          class="btn btn-outline-success"
+          type="button"
+          data-bs-toggle="modal"
+          data-bs-target="#modalTechnical"
+        >
+          主動填寫：技巧訓練紀錄
+        </button>
       </div>
 
       <!-- 顯示已填寫內容（主動區） -->
@@ -67,27 +108,27 @@
         <div class="card-header bg-info text-white">✅ 我自己填寫的訓練紀錄</div>
         <div class="card-body">
           {% if record and (record.jump_type or record.jump_count or record.run_distance or record.run_time or record.weight_sets or record.agility_type or record.agility_note) %}
-            <p><strong>體能訓練：</strong>
-              {{ record.jump_type or '' }}，
-              {{ record.jump_count or '' }} 次，
-              跑步 {{ record.run_distance or '' }}km / {{ record.run_time or '' }}min，
-              重量：{{ record.weight_sets or '' }}，
-              敏捷：{{ record.agility_type or '' }}，
-              備註：{{ record.agility_note or '' }}
-            </p>
+          <p><strong>體能訓練：</strong>
+            {{ record.jump_type or '' }}，
+            {{ record.jump_count or '' }} 次，
+            跑步 {{ record.run_distance or '' }}km / {{ record.run_time or '' }}min，
+            重量：{{ record.weight_sets or '' }}，
+            敏捷：{{ record.agility_type or '' }}，
+            備註：{{ record.agility_note or '' }}
+          </p>
           {% else %}
-            <p class="text-muted">尚未填寫體能訓練</p>
+          <p class="text-muted">尚未填寫體能訓練</p>
           {% endif %}
 
           {% set technical_items = record.technical_items | from_json %}
           {% if technical_items %}
-            <ul>
-              {% for item in technical_items %}
-                <li>[{{ item.category }}] {{ item.topic }} ({{ item.duration_or_reps }}) - {{ item.focus }}</li>
-              {% endfor %}
-            </ul>
+          <ul>
+            {% for item in technical_items %}
+            <li>[{{ item.category }}] {{ item.topic }} ({{ item.duration_or_reps }}) - {{ item.focus }}</li>
+            {% endfor %}
+          </ul>
           {% else %}
-            <p class="text-muted">尚未填寫技巧訓練</p>
+          <p class="text-muted">尚未填寫技巧訓練</p>
           {% endif %}
         </div>
       </div>
@@ -103,14 +144,67 @@
           <div class="modal-content">
             <div class="modal-header"><h5>體能訓練紀錄</h5></div>
             <div class="modal-body">
-              <div class="mb-2"><label>跳繩種類</label><input type="text" name="jump_type" class="form-control"></div>
-              <div class="mb-2"><label>跳繩次數</label><input type="number" name="jump_count" class="form-control"></div>
-              <div class="mb-2"><label>跑步距離</label><input type="text" name="run_distance" class="form-control"></div>
-              <div class="mb-2"><label>跑步時間</label><input type="text" name="run_time" class="form-control"></div>
-              <div class="mb-2"><label>重量訓練</label><input type="text" name="weight_sets" class="form-control"></div>
-              <div class="mb-2"><label>敏捷訓練</label><input type="text" name="agility_type" class="form-control"></div>
-              <div class="mb-2"><label>備註</label><textarea name="agility_note" class="form-control"></textarea></div>
-              <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">確認</button></div>
+              <div class="mb-2">
+                <label>跳繩種類</label>
+                <input
+                  type="text"
+                  name="jump_type"
+                  class="form-control"
+                  value="{{ record.jump_type or '' }}"
+                />
+              </div>
+              <div class="mb-2">
+                <label>跳繩次數</label>
+                <input
+                  type="number"
+                  name="jump_count"
+                  class="form-control"
+                  value="{{ record.jump_count or '' }}"
+                />
+              </div>
+              <div class="mb-2">
+                <label>跑步距離</label>
+                <input
+                  type="text"
+                  name="run_distance"
+                  class="form-control"
+                  value="{{ record.run_distance or '' }}"
+                />
+              </div>
+              <div class="mb-2">
+                <label>跑步時間</label>
+                <input
+                  type="text"
+                  name="run_time"
+                  class="form-control"
+                  value="{{ record.run_time or '' }}"
+                />
+              </div>
+              <div class="mb-2">
+                <label>重量訓練</label>
+                <input
+                  type="text"
+                  name="weight_sets"
+                  class="form-control"
+                  value="{{ record.weight_sets or '' }}"
+                />
+              </div>
+              <div class="mb-2">
+                <label>敏捷訓練</label>
+                <input
+                  type="text"
+                  name="agility_type"
+                  class="form-control"
+                  value="{{ record.agility_type or '' }}"
+                />
+              </div>
+              <div class="mb-2">
+                <label>備註</label>
+                <textarea name="agility_note" class="form-control">{{ record.agility_note or '' }}</textarea>
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">確認</button>
+              </div>
             </div>
           </div>
         </div>
@@ -122,34 +216,84 @@
           <div class="modal-content">
             <div class="modal-header"><h5>技巧訓練紀錄</h5></div>
             <div class="modal-body">
-              <div class="mb-3"><label>訓練標題</label><input type="text" name="technical_title" class="form-control"></div>
+              <div class="mb-3">
+                <label>訓練標題</label>
+                <input
+                  type="text"
+                  name="technical_title"
+                  class="form-control"
+                  value="{{ record.technical_title or '' }}"
+                />
+              </div>
 
               <table class="table table-bordered" id="tech-table">
-                <thead><tr><th>類型</th><th>主題</th><th>次數/時間</th><th>重點</th><th>操作</th></tr></thead>
-                <tbody>
+                <thead>
                   <tr>
-                    <td>
-                      <select name="category[]" class="form-select">
-                        <option value="單球">單球</option>
-                        <option value="多球">多球</option>
-                        <option value="發球">發球</option>
-                      </select>
-                    </td>
-                    <td><input type="text" name="topic[]" class="form-control"></td>
-                    <td><input type="text" name="duration[]" class="form-control"></td>
-                    <td><input type="text" name="focus[]" class="form-control"></td>
-                    <td><button type="button" class="btn btn-danger btn-sm" onclick="removeTechRow(this)">刪除</button></td>
+                    <th>類型</th>
+                    <th>主題</th>
+                    <th>次數/時間</th>
+                    <th>重點</th>
+                    <th>操作</th>
                   </tr>
+                </thead>
+                <tbody>
+                  {% set technical_items = record.technical_items | from_json %}
+                  {% if technical_items %}
+                    {% for item in technical_items %}
+                      <tr>
+                        <td>
+                          <select name="category[]" class="form-select">
+                            <option value="單球" {% if item.category == '單球' %}selected{% endif %}>單球</option>
+                            <option value="多球" {% if item.category == '多球' %}selected{% endif %}>多球</option>
+                            <option value="發球" {% if item.category == '發球' %}selected{% endif %}>發球</option>
+                          </select>
+                        </td>
+                        <td><input type="text" name="topic[]" class="form-control" value="{{ item.topic }}" /></td>
+                        <td><input type="text" name="duration[]" class="form-control" value="{{ item.duration_or_reps }}" /></td>
+                        <td><input type="text" name="focus[]" class="form-control" value="{{ item.focus }}" /></td>
+                        <td>
+                          <button type="button" class="btn btn-danger btn-sm" onclick="removeTechRow(this)">刪除</button>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td>
+                        <select name="category[]" class="form-select">
+                          <option value="單球">單球</option>
+                          <option value="多球">多球</option>
+                          <option value="發球">發球</option>
+                        </select>
+                      </td>
+                      <td><input type="text" name="topic[]" class="form-control" /></td>
+                      <td><input type="text" name="duration[]" class="form-control" /></td>
+                      <td><input type="text" name="focus[]" class="form-control" /></td>
+                      <td>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removeTechRow(this)">刪除</button>
+                      </td>
+                    </tr>
+                  {% endif %}
                 </tbody>
               </table>
               <button type="button" class="btn btn-secondary mb-3" onclick="addTechRow()">新增訓練項目</button>
 
-              <div class="mb-2"><label>心得</label><textarea name="technical_feedback" class="form-control"></textarea></div>
+              <div class="mb-2">
+                <label>心得</label>
+                <textarea name="technical_feedback" class="form-control">{{ record.technical_feedback or '' }}</textarea>
+              </div>
               <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="technical_completed" value="true">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  name="technical_completed"
+                  value="on"
+                  {% if record.technical_completed %}checked{% endif %}
+                />
                 <label class="form-check-label">我已完成此技巧訓練</label>
               </div>
-              <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">確認</button></div>
+              <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">確認</button>
+              </div>
             </div>
           </div>
         </div>
@@ -163,20 +307,20 @@
     flatpickr("#datePicker", {
       dateFormat: "Y-m-d",
       defaultDate: "{{ current_date }}",
-      onChange: function(selectedDates, dateStr, instance) {
+      onChange: function (selectedDates, dateStr, instance) {
         window.location.href = "/training/today?date=" + dateStr;
-      }
+      },
     });
 
     function addTechRow() {
-      const row = document.querySelector('#tech-table tbody tr').cloneNode(true);
-      row.querySelectorAll('input').forEach(input => input.value = '');
-      row.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
-      document.querySelector('#tech-table tbody').appendChild(row);
+      const row = document.querySelector("#tech-table tbody tr").cloneNode(true);
+      row.querySelectorAll("input").forEach((input) => (input.value = ""));
+      row.querySelectorAll("select").forEach((select) => (select.selectedIndex = 0));
+      document.querySelector("#tech-table tbody").appendChild(row);
     }
     function removeTechRow(button) {
-      const row = button.closest('tr');
-      const tbody = document.querySelector('#tech-table tbody');
+      const row = button.closest("tr");
+      const tbody = document.querySelector("#tech-table tbody");
       if (tbody.rows.length > 1) row.remove();
     }
   </script>
