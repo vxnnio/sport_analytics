@@ -11,6 +11,8 @@ from app.routes.profile import profile_bp
 from app.routes.training import training_bp
 from app.routes.evaluation import evaluation_bp
 from app.routes.athlete import athlete_bp
+from app.routes.food import bp as food_bp
+import os
 from app.routes.chat import chat_bp
 from app.routes.voice import voice_bp
 from app.routes.line_bot import line_bp
@@ -19,17 +21,19 @@ from app.models.announcement import Announcement
 from app.models.sleep_record import SleepRecord 
 from app.routes.stress_evaluate import stress_bp
 from app.models.stress_evaluate import StressEvaluate
-
+from app.models.food_photo import FoodPhoto
+target_metadata = Base.metadata
 
 from dotenv import load_dotenv
 
 
-
+UPLOAD_FOLDER = 'uploads/food'
 
 def create_app():
     app = Flask(__name__, static_folder='static')
     app.config.from_object(Config)
-
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
     Base.metadata.create_all(bind=engine)
     
     login_manager = LoginManager()
@@ -45,9 +49,10 @@ def create_app():
     app.register_blueprint(training_bp,url_prefix='/training')
     app.register_blueprint(evaluation_bp, url_prefix='/evaluation')
     app.register_blueprint(athlete_bp)
+    app.register_blueprint(voice_bp)
+    app.register_blueprint(food_bp, url_prefix='/food')
     app.register_blueprint(chat_bp, url_prefix='/chatbot')
     app.register_blueprint(chat_bp)
-    app.register_blueprint(voice_bp)
 
     
     @login_manager.user_loader

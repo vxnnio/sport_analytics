@@ -12,6 +12,13 @@ from linebot.models import FlexSendMessage
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime
 import pytz
+from linebot.models import ImageMessage
+from PIL import Image
+from io import BytesIO
+from sqlalchemy import text
+from sqlalchemy import func
+
+UPLOAD_FOLDER = "uploads/food"
 
 # 啟用排程器（全域）
 scheduler = BackgroundScheduler(timezone="Asia/Taipei")
@@ -43,6 +50,41 @@ line_bp = Blueprint("line", __name__)
 line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
 
+@handler.add(MessageEvent, message=ImageMessage)
+def handle_image_message(event):
+    line_id = event.source.user_id
+
+    with get_db() as session:
+        user = session.query(User).filter_by(line_user_id=line_id).first()
+        if not user:
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text="❌ 您尚未綁定帳號，請輸入：綁定 <帳號>")
+            )
+            return
+
+    message_content = line_bot_api.get_message_content(event.message.id)
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
+    filepath = os.path.join(UPLOAD_FOLDER, filename)
+
+    with open(filepath, "wb") as f:
+        for chunk in message_content.iter_content():
+            f.write(chunk)
+
+    with get_db() as session:
+        session.execute(
+            text("INSERT INTO food_photos (athlete_id, filename, upload_time) VALUES (:athlete_id, :filename, :upload_time)"),
+            {"athlete_id": user.id, "filename": filename, "upload_time": datetime.now()}
+        )
+        session.commit()
+
+    line_bot_api.reply_message(
+        event.reply_token,
+        TextSendMessage(text="✅ 圖片已上傳！")
+    )
+
+
 @line_bp.route("/callback", methods=['POST'])
 def callback():
     signature = request.headers.get('X-Line-Signature')
@@ -59,20 +101,19 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    text = event.message.text.strip().lower()
+    text = event.message.text.strip()
     line_id = event.source.user_id
-
-    if text.startswith("綁定"):
-        username = text.replace("綁定", "").strip()
-        reply = bind_account(username, line_id)
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
         
-    elif text.startswith("綁定狀態"):
+    if text.startswith("綁定狀態"):
         user = get_user_by_line_id(line_id)
         if user:
             reply = f"您已綁定帳號：{user.username}"
         else:
             reply = "您尚未綁定帳號，請輸入：綁定 <帳號>"
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
+    elif text.startswith("綁定"):
+        username = text.replace("綁定", "").strip()
+        reply = bind_account(username, line_id)
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
 
     elif "出席" in text:
@@ -92,13 +133,17 @@ def handle_message(event):
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
 
 def bind_account(username, line_id):
+    print(f"嘗試綁定帳號: '{username}'")
     with get_db() as session:
-        user = session.query(User).filter_by(username=username).first()
+        user = session.query(User).filter(func.lower(User.username) == username.lower()).first()
         if not user:
+            print("找不到該帳號")
             return "❌ 找不到該帳號"
+        print(f"找到帳號: {user.username}")
         user.line_user_id = line_id
         session.commit()
-        return f"✅ 成功綁定帳號 {username}"
+        return f"✅ 成功綁定帳號 {user.username}"
+
 
 def get_attendance_by_line_id(line_id):
     with get_db() as session:
@@ -143,7 +188,7 @@ def get_user_by_line_id(line_id):
 
 
 def get_announcements():
-    url = "https://14edbb0818c2.ngrok-free.app/coach/api/announcements"
+    url = "https://1882ce4df595.ngrok-free.app/coach/api/announcements"
     try:
         res = requests.get(url)
         if res.status_code == 200:
@@ -201,7 +246,7 @@ def get_evaluation_card():
                     "action": {
                         "type": "uri",
                         "label": "前往填寫",
-                        "uri": "https://14edbb0818c2.ngrok-free.app/evaluation/form"
+                        "uri": "https://1882ce4df595.ngrok-free.app/evaluation/form"
                     }
                 }
             ]

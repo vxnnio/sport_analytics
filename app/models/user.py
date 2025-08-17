@@ -9,6 +9,8 @@ class User(Base):
     username = Column(String(80), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
     role = Column(String(20), nullable=False)
+    
+    line_user_id = Column(String(128), unique=True, nullable=True)
 
     full_name = Column(String(100), default="")
     birth_date = Column(Date, nullable=True)
@@ -16,7 +18,7 @@ class User(Base):
     height = Column(Integer, nullable=True)  # 單位：公分
     weight = Column(Integer, nullable=True)  # 單位：公斤
     region = Column(String(100), default="")
-
+    
     bio = Column(String(500), default="")
     profile_pic = Column(String(255), default="uploads/default.png")
 
