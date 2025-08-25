@@ -46,8 +46,8 @@ def create_app():
     app.register_blueprint(evaluation_bp, url_prefix='/evaluation')
     app.register_blueprint(athlete_bp)
     app.register_blueprint(chat_bp, url_prefix='/chatbot')
-    app.register_blueprint(chat_bp)
     app.register_blueprint(voice_bp)
+    app.register_blueprint(stress_bp)
 
     
     @login_manager.user_loader

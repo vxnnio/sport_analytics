@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>派發訓練 - 教練端</title>
+  <style>
+    body {
+      font-family: "Noto Sans TC", sans-serif;
+      max-width: 720px;
+      margin: 30px auto;
+      padding: 0 15px;
+      background-color: #f7f9fc;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #333;
+    }
+    form {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+    }
+    label {
+      font-weight: 600;
+      margin-top: 15px;
+      display: block;
+      color: #444;
+    }
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 1.5px solid #ccc;
+      resize: vertical;
+      margin-top: 8px;
+    }
+    .technical-item {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      align-items: center;
+      flex-wrap: wrap; /* 允許換行 */
+    }
+    .technical-item input {
+      flex: 1 1 150px; /* 最小寬度150px，寬度可伸縮 */
+      padding: 8px 10px;
+      font-size: 0.95rem;
+      border-radius: 5px;
+      border: 1.3px solid #ccc;
+      min-width: 0; /* 防止溢出 */
+    }
+    .technical-item button.remove-item {
+      flex: 0 0 auto; /* 固定大小 */
+      background: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background-color 0.2s ease-in-out;
+      white-space: nowrap; /* 不換行 */
+    }
+    .technical-item button.remove-item:hover {
+      background: #c0392b;
+    }
+    #add-technical-item {
+      margin-top: 15px;
+      padding: 10px 15px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    #add-technical-item:hover {
+      background-color: #2980b9;
+    }
+    button[type="submit"] {
+      margin-top: 30px;
+      width: 100%;
+      padding: 12px 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button[type="submit"]:hover {
+      background-color: #1e8449;
+    }
+  </style>
+</head>
+<body>
+  <h1>派發訓練</h1>
+
+  <form method="POST" style="max-width:720px; margin: 30px auto; background:#fff; padding:20px 30px; border-radius:8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); font-family:'Noto Sans TC', sans-serif;">
+  
+  <!-- 日期選擇器 -->
+  <label for="date">選擇日期</label>
+  <input 
+    type="date" 
+    id="date" 
+    name="date" 
+    required
+    value="{{ record.date or current_date }}"
+    style="width: 100%; padding: 10px 12px; font-size: 1.1rem; border: 1.8px solid #ccc; border-radius: 6px; margin-bottom: 20px;"/>
+
+  <!-- 選手下拉選單 -->
+  <label for="athlete_id" style="display: block; font-weight: 600; font-size: 1.15rem; margin-bottom: 10px;">選擇選手：</label>
+  
+  <select id="athlete_id" name="athlete_id" required
+          style="width: 100%; padding: 10px 12px; font-size: 1.1rem; border: 1.8px solid #ccc; border-radius: 6px; margin-bottom: 20px; transition: border-color 0.3s;">
+    {% for athlete in athletes %}
+      <option value="{{ athlete.id }}">{{ athlete.full_name }}</option>
+    {% endfor %}
+  </select>
+
+
+
+
+
+  <!-- 體能訓練內容 -->
+  <label for="coach_assigned_physical">體能訓練內容</label>
+  <textarea id="coach_assigned_physical" name="coach_assigned_physical" placeholder="請輸入體能訓練內容">{{ record.coach_assigned_physical or '' }}</textarea>
+
+  <!-- 技巧訓練項目（可新增多筆） -->
+  <label>技巧訓練項目</label>
+  <div id="technical-items">
+    {% if record and record.coach_assigned_technical %}
+      {% for item in record.coach_assigned_technical | from_json %}
+      <div class="technical-item" style="display:flex; gap:10px; margin-top:10px; flex-wrap: wrap; align-items:center;">
+        <input type="text" name="technical_category[]" placeholder="類別" value="{{ item.category }}" style="flex:1 1 150px; padding:8px 10px; border-radius:5px; border:1.3px solid #ccc;">
+        <input type="text" name="technical_topic[]" placeholder="主題" value="{{ item.topic }}" style="flex:1 1 150px; padding:8px 10px; border-radius:5px; border:1.3px solid #ccc;">
+        <input type="text" name="technical_duration[]" placeholder="時間/次數" value="{{ item.duration_or_reps }}" style="flex:1 1 150px; padding:8px 10px; border-radius:5px; border:1.3px solid #ccc;">
+        <input type="text" name="technical_focus[]" placeholder="重點" value="{{ item.focus }}" style="flex:1 1 150px; padding:8px 10px; border-radius:5px; border:1.3px solid #ccc;">
+        <button type="button" class="remove-item" style="flex:0 0 auto; background:#e74c3c; color:#fff; border:none; border-radius:5px; padding:6px 10px; cursor:pointer; font-weight:700;">刪除</button>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="technical-item" style="display:flex; gap:10px; margin-top:10px; flex-wrap: wrap; align-items:center;">
+        <input type="text" name="technical_category[]" placeholder="類別" style="flex:1 1 150px; padding:8px 10px; border-radius:5px; border:1.3px solid #ccc;">
+        <input type="text" name="technical_topic[]" placeholder="主題" style="flex:1 1 150px; padding:8px 10px; border-radius:5px; border:1.3px solid #ccc;">
+        <input type="text" name="technical_duration[]" placeholder="時間/次數" style="flex:1 1 150px; padding:8px 10px; border-radius:5px; border:1.3px solid #ccc;">
+        <input type="text" name="technical_focus[]" placeholder="重點" style="flex:1 1 150px; padding:8px 10px; border-radius:5px; border:1.3px solid #ccc;">
+        <button type="button" class="remove-item" style="flex:0 0 auto; background:#e74c3c; color:#fff; border:none; border-radius:5px; padding:6px 10px; cursor:pointer; font-weight:700;">刪除</button>
+      </div>
+    {% endif %}
+  </div>
+
+  <button type="button" id="add-technical-item" style="margin-top: 15px; padding: 10px 15px; background-color: #3498db; color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; transition: background-color 0.3s ease;">
+    新增技巧訓練項目
+  </button>
+
+  <button type="submit" style="margin-top: 30px; width: 100%; padding: 12px 0; font-size: 1.15rem; font-weight: 700; background-color: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.3s ease;">
+    儲存派發
+  </button>
+</form>
+
+<script>
+  // 新增技巧訓練項目
+  document.getElementById('add-technical-item').addEventListener('click', function() {
+    const container = document.getElementById('technical-items');
+    const item = document.createElement('div');
+    item.className = 'technical-item';
+    item.style = 'display:flex; gap:10px; margin-top:10px; flex-wrap: wrap; align-items:center;';
+    item.innerHTML = `
+      <input type="text" name="technical_category[]" placeholder="類別" style="flex:1 1 150px; padding:8px 10px; border-radius:5px; border:1.3px solid #ccc;" />
+      <input type="text" name="technical_topic[]" placeholder="主題" style="flex:1 1 150px; padding:8px 10px; border-radius:5px; border:1.3px solid #ccc;" />
+      <input type="text" name="technical_duration[]" placeholder="時間/次數" style="flex:1 1 150px; padding:8px 10px; border-radius:5px; border:1.3px solid #ccc;" />
+      <input type="text" name="technical_focus[]" placeholder="重點" style="flex:1 1 150px; padding:8px 10px; border-radius:5px; border:1.3px solid #ccc;" />
+      <button type="button" class="remove-item" style="flex:0 0 auto; background:#e74c3c; color:#fff; border:none; border-radius:5px; padding:6px 10px; cursor:pointer; font-weight:700;">刪除</button>
+    `;
+    container.appendChild(item);
+  });
+
+  // 刪除技巧訓練項目
+  document.getElementById('technical-items').addEventListener('click', function(e){
+    if(e.target.classList.contains('remove-item')){
+      e.target.parentElement.remove();
+    }
+  });
+</script>
+
+</body>
+</html>

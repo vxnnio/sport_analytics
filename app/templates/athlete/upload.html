@@ -145,14 +145,16 @@
             <div class="modal-header"><h5>體能訓練紀錄</h5></div>
             <div class="modal-body">
               <div class="mb-2">
-                <label>跳繩種類</label>
-                <input
-                  type="text"
-                  name="jump_type"
-                  class="form-control"
-                  value="{{ record.jump_type or '' }}"
-                />
+                <label for="jump_type">跳繩種類</label>
+                <select name="jump_type" id="jump_type" class="form-control" required>
+                  <option value="" disabled {{ 'selected' if not record.jump_type }}>請選擇跳繩種類</option>
+                  <option value="Basic" {{ 'selected' if record.jump_type == 'Basic' }}>基本繩</option>
+                  <option value="Speed" {{ 'selected' if record.jump_type == 'Speed' }}>速度繩</option>
+                  <option value="Weighted" {{ 'selected' if record.jump_type == 'Weighted' }}>重量繩</option>
+                  <option value="Freestyle" {{ 'selected' if record.jump_type == 'Freestyle' }}>花式繩</option>
+                </select>
               </div>
+
               <div class="mb-2">
                 <label>跳繩次數</label>
                 <input
