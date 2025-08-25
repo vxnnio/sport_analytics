@@ -1,6 +1,7 @@
 from flask import Blueprint, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
+from linebot.models import RichMenu, RichMenuArea, RichMenuBounds, MessageAction
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 import requests
 import os
@@ -17,6 +18,7 @@ from PIL import Image
 from io import BytesIO
 from sqlalchemy import text
 from sqlalchemy import func
+from flask_login import current_user, login_required
 
 UPLOAD_FOLDER = "uploads/food"
 
@@ -74,8 +76,8 @@ def handle_image_message(event):
 
     with get_db() as session:
         session.execute(
-            text("INSERT INTO food_photos (athlete_id, filename, upload_time) VALUES (:athlete_id, :filename, :upload_time)"),
-            {"athlete_id": user.id, "filename": filename, "upload_time": datetime.now()}
+            text("INSERT INTO food_photos (athlete_id, athlete_username, filename, upload_time) ""VALUES (:athlete_id, :athlete_username, :filename, :upload_time)"),
+            {"athlete_id": current_user.id, "athlete_username": current_user.username, "filename": filename,"upload_time": datetime.now()}
         )
         session.commit()
 
@@ -124,12 +126,12 @@ def handle_message(event):
         reply = get_announcements()
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
 
-    elif "評估表" in text:
+    elif "訓練表" in text:
         flex_message = get_evaluation_card()
         line_bot_api.reply_message(event.reply_token, flex_message)
 
     else:
-        reply = "請輸入「公告」、「出席」、「評估表」或「綁定 <帳號>」"
+        reply = "請輸入「公告」、「出席」、「訓練表」或「綁定 <帳號>」"
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
 
 def bind_account(username, line_id):
@@ -179,7 +181,6 @@ def get_attendance_by_line_id(line_id):
             msg += f"📅 {date_str}：{zh_status}\n"
 
         return msg
-        return msg
 
 def get_user_by_line_id(line_id):
     with get_db() as session:
@@ -188,7 +189,7 @@ def get_user_by_line_id(line_id):
 
 
 def get_announcements():
-    url = "https://1882ce4df595.ngrok-free.app/coach/api/announcements"
+    url = "https://3309ba8c2e0d.ngrok-free.app/coach/api/announcements"
     try:
         res = requests.get(url)
         if res.status_code == 200:
@@ -246,7 +247,7 @@ def get_evaluation_card():
                     "action": {
                         "type": "uri",
                         "label": "前往填寫",
-                        "uri": "https://1882ce4df595.ngrok-free.app/evaluation/form"
+                        "uri": "https://3309ba8c2e0d.ngrok-free.app/evaluation/form"
                     }
                 }
             ]
@@ -254,3 +255,40 @@ def get_evaluation_card():
     }
 
     return FlexSendMessage(alt_text="請填寫訓練評估表", contents=flex_content)
+
+def create_rich_menu():
+    rich_menu = RichMenu(
+        size={"width": 2500, "height": 843},  # 高度 843 剛好可以放三個按鈕
+        selected=True,
+        name="功能選單",
+        chat_bar_text="選單",
+        areas=[
+            RichMenuArea(
+                bounds=RichMenuBounds(x=0, y=0, width=833, height=843),
+                action=MessageAction(label="公告", text="公告")
+            ),
+            RichMenuArea(
+                bounds=RichMenuBounds(x=834, y=0, width=833, height=843),
+                action=MessageAction(label="出席", text="出席")
+            ),
+            RichMenuArea(
+                bounds=RichMenuBounds(x=1667, y=0, width=833, height=843),
+                action=MessageAction(label="訓練表", text="訓練表")
+            ),
+        ]
+    )
+
+    # 建立 Rich Menu
+    rich_menu_id = line_bot_api.create_rich_menu(rich_menu=rich_menu)
+    print("✅ Rich Menu 建立成功，ID:", rich_menu_id)
+
+    # 綁定圖片（你要把圖片放在 uploads/richmenu/ 下）
+    image_path = "static/richmenu.png"
+    if os.path.exists(image_path):
+        with open(image_path, "rb") as f:
+            line_bot_api.set_rich_menu_image(rich_menu_id, "image/png", f)
+        print("✅ Rich Menu 圖片綁定成功")
+
+    # 設為預設 Rich Menu
+    line_bot_api.set_default_rich_menu(rich_menu_id)
+    print("✅ 設為預設 Rich Menu")

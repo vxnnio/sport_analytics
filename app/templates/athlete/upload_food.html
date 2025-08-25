@@ -1,37 +1,25 @@
-<!-- templates/athlete/upload_food.html -->
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>上傳飲食照片</title>
+    <title>上傳今日飲食照片</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #f8f9fa; }
-        .card {
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
-        .btn-submit {
-            background-color: #007bff;
-            color: white;
-            font-weight: bold;
-            border-radius: 8px;
-        }
+        .card { border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .btn-submit { background-color: #007bff; color: white; font-weight: bold; border-radius: 8px; }
         .btn-submit:hover { background-color: #0056b3; }
-        .section-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-            font-size: 1rem;
-        }
+        .section-title { font-weight: bold; margin-bottom: 5px; font-size: 1rem; }
+        .food-img { max-width: 600px; height: auto; border-radius: 8px; }
     </style>
 </head>
 <body>
 <div class="container py-4">
     <h3 class="mb-4">上傳今日飲食照片</h3>
-    <form method="POST" enctype="multipart/form-data">
 
+    <!-- 上傳表單 -->
+    <form method="POST" enctype="multipart/form-data">
         <div class="card p-3">
             <div class="section-title">選擇照片</div>
             <input type="file" name="photo" accept="image/*" class="form-control" required>
@@ -42,10 +30,31 @@
         </div>
     </form>
 
+    <hr>
+
+    <!-- 顯示已上傳的照片與教練評論 -->
+    <h4 class="mb-3">已上傳照片與教練評論</h4>
+    {% for photo in photos %}
+    <div class="card p-3">
+        <div class="section-title">上傳於 {{ photo.upload_time }}</div>
+        <img src="{{ url_for('food.uploaded_file', filename=photo.filename) }}" class="food-img mb-3">
+
+        {% if photo.comment %}
+        <div class="alert alert-info">
+            <strong>教練評論：</strong> {{ photo.comment }}<br>
+            <small>時間：{{ photo.comment_time }}</small>
+        </div>
+        {% else %}
+        <div class="text-muted">尚未有教練評論</div>
+        {% endif %}
+    </div>
+    {% endfor %}
+
     <div class="text-center mt-3">
         <a href="/auth/dashboard" class="btn btn-outline-secondary">返回主頁</a>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

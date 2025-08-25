@@ -11,9 +11,9 @@ from app.routes.profile import profile_bp
 from app.routes.training import training_bp
 from app.routes.evaluation import evaluation_bp
 from app.routes.athlete import athlete_bp
+from app.routes.chat import chat_bp
 from app.routes.food import bp as food_bp
 import os
-from app.routes.chat import chat_bp
 from app.routes.voice import voice_bp
 from app.routes.line_bot import line_bp
 from app.models import User
@@ -26,6 +26,8 @@ target_metadata = Base.metadata
 
 from dotenv import load_dotenv
 
+# ⬇️ 匯入你 line_bot 那邊的 create_rich_menu
+from app.routes.line_bot import create_rich_menu  
 
 UPLOAD_FOLDER = 'uploads/food'
 
@@ -38,7 +40,7 @@ def create_app():
     
     login_manager = LoginManager()
     login_manager.init_app(app)
-    login_manager.login_view = 'auth.login'  # 指定未登入者會被導向的登入頁面 endpoint
+    login_manager.login_view = 'auth.login'
 
     app.register_blueprint(coach_bp)
     app.register_blueprint(admin_bp, url_prefix='/admin')
@@ -46,21 +48,25 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(line_bp)
-    app.register_blueprint(training_bp,url_prefix='/training')
+    app.register_blueprint(training_bp, url_prefix='/training')
     app.register_blueprint(evaluation_bp, url_prefix='/evaluation')
     app.register_blueprint(athlete_bp)
     app.register_blueprint(voice_bp)
-    app.register_blueprint(food_bp, url_prefix='/food')
     app.register_blueprint(chat_bp, url_prefix='/chatbot')
-    app.register_blueprint(chat_bp)
+    app.register_blueprint(food_bp, url_prefix='/food')
 
-    
     @login_manager.user_loader
     def load_user(user_id):
         db = SessionLocal()
         user = db.query(User).get(int(user_id))
         db.close()
         return user 
+
+    # ⚡️這裡呼叫 Rich Menu 建立
+    try:
+        create_rich_menu()
+    except Exception as e:
+        print(f"[RichMenu Error] {e}")
 
     return app
 
