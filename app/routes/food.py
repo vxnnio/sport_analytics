@@ -5,6 +5,8 @@ from flask import Blueprint, request, render_template, redirect, url_for, flash,
 from werkzeug.utils import secure_filename
 from sqlalchemy import text
 from app.database import get_db
+from flask_login import current_user, login_required
+
 
 bp = Blueprint('food', __name__, url_prefix='/food')
 
@@ -26,6 +28,7 @@ def check_athlete_exists(db, athlete_id: int) -> bool:
     return result is not None
 
 @bp.route('/upload', methods=['GET', 'POST'])
+@login_required
 def upload_food():
     if request.method == 'POST':
         # 實務上建議從 session / current_user 取得
@@ -112,11 +115,24 @@ def comment_food(photo_id: int):
         return redirect(url_for('food.view_food'))
 
     with get_db() as db:
+        # 確認這張照片存在
+        photo = db.execute(
+            text("SELECT * FROM food_photos WHERE id=:photo_id"),
+            {"photo_id": photo_id}
+        ).fetchone()
+
+        if not photo:
+            flash("找不到該照片", "danger")
+            return redirect(url_for('food.view_food'))
+
+        # 更新評論和時間
         db.execute(
             text(
-                "UPDATE food_photos SET comment=:comment, comment_time=:comment_time WHERE id=:photo_id"
+                "UPDATE food_photos "
+                "SET comment=:comment, comment_time=:comment_time "
+                "WHERE id=:photo_id"
             ),
-            {"comment": comment, "comment_time": datetime.now(), "photo_id": photo_id}
+            {"comment": comment_text, "comment_time": datetime.now(), "photo_id": photo_id}
         )
         db.commit()
 
@@ -154,3 +170,6 @@ def delete_food(photo_id: int):
 
     flash('照片已刪除', 'success')
     return redirect(url_for('food.view_food'))
+
+
+
