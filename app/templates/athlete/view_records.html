@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>我的訓練紀錄</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container py-4">
+  <h4>我的訓練紀錄</h4>
+
+  <!-- 日期查詢 -->
+  <form method="get" class="mb-3">
+    <label>查詢日期</label>
+    <input type="date" name="date" value="{{ selected_date or '' }}" class="form-control" />
+    <button type="submit" class="btn btn-primary mt-2">查詢</button>
+    <a href="{{ url_for('training.view_training_records') }}" class="btn btn-secondary mt-2">全部紀錄</a>
+  </form>
+
+  {% if records %}
+    {% for record in records %}
+      <div class="card mb-3">
+        <div class="card-header">
+          {{ record.date }} 訓練紀錄
+        </div>
+        <div class="card-body">
+          <p><strong>體能訓練：</strong> {{ record.jump_type or '' }} - {{ record.jump_count or '' }} 次，跑步 {{ record.run_distance or '' }}km / {{ record.run_time or '' }}min，重量：{{ record.weight_sets or '' }}，敏捷：{{ record.agility_type or '' }}，備註：{{ record.agility_note or '' }}</p>
+          
+          <p><strong>技巧訓練：</strong></p>
+          <ul>
+            {% set technical_items = record.technical_items | from_json %}
+            {% if technical_items %}
+              {% for item in technical_items %}
+                <li>[{{ item.category }}] {{ item.topic }} ({{ item.duration_or_reps }}) - {{ item.focus }}</li>
+              {% endfor %}
+            {% else %}
+              <li>尚未填寫技巧訓練</li>
+            {% endif %}
+          </ul>
+
+          <p><strong>心得：</strong> {{ record.technical_feedback or '尚未填寫' }}</p>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>尚未有訓練紀錄</p>
+  {% endif %}
+
+  <a href="{{ url_for('auth.dashboard') }}" class="btn btn-outline-primary">返回主頁</a>
+</div>
+</body>
+</html>
