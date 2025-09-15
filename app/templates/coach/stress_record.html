@@ -1,22 +1,37 @@
-<h2>選手壓力評估查詢</h2>
+<h2 style="text-align:center; margin-bottom: 25px;">選手壓力評估查詢</h2>
 
-<form method="POST">
-  <label>選擇選手：</label>
-  <select name="athlete_id" required>
+<form method="POST" style="max-width: 480px; margin: 0 auto 30px; background: #fff; padding: 25px 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-family: 'Noto Sans TC', sans-serif;">
+
+  <label for="athlete_id" style="display: block; font-weight: 600; font-size: 1.15rem; margin-bottom: 10px;">選擇選手：</label>
+  
+  <select id="athlete_id" name="athlete_id" required
+          style="width: 100%; padding: 10px 12px; font-size: 1.1rem; border: 1.8px solid #ccc; border-radius: 6px; margin-bottom: 20px; transition: border-color 0.3s;">
     {% for athlete in athletes %}
       <option value="{{ athlete.id }}">{{ athlete.full_name }}</option>
     {% endfor %}
   </select>
-  <button type="submit">查詢</button>
+  
+  <button type="submit" 
+          style="width: 100%; padding: 12px 0; font-size: 1.2rem; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; transition: background-color 0.3s;">
+    查詢
+  </button>
+  <!-- 新增回主頁按鈕 -->
+  <a href="{{ url_for('coach.dashboard') }}" 
+     style="display: block; margin-top: 15px; text-align: center; padding: 12px 0; font-size: 1.2rem; background-color: #6c757d; color: white; border-radius: 6px; text-decoration: none; font-weight: 700; transition: background-color 0.3s;">
+    回到主頁
+  </a>
 </form>
 
 {% if result %}
-  <hr>
-  <h3>查詢結果：</h3>
-  <p><strong>日期：</strong>{{ result.timestamp.strftime("%Y-%m-%d %H:%M") }}</p>
-  <p><strong>壓力分數：</strong>{{ score }}</p>
-  <p><strong>建議：</strong>{{ suggestion }}</p>
+  <div style="max-width: 480px; margin: 0 auto; font-family: 'Noto Sans TC', sans-serif; background: #f9f9f9; padding: 25px 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.07);">
+    <hr style="margin-bottom: 20px; border-color: #ddd;">
+    <h3 style="margin-bottom: 18px; color: #007bff; font-weight: 700;">查詢結果：</h3>
+    <p style="font-size: 1.15rem; margin-bottom: 10px;"><strong>日期：</strong>{{ result.timestamp.strftime("%Y-%m-%d %H:%M") }}</p>
+    <p style="font-size: 1.15rem; margin-bottom: 10px;"><strong>壓力分數：</strong>{{ score }}</p>
+    <p style="font-size: 1.15rem;"><strong>建議：</strong>{{ suggestion }}</p>
+  </div>
 {% elif request.method == 'POST' %}
-  <p style="color:red;">此選手尚無壓力評估紀錄。</p>
+  <p style="max-width: 480px; margin: 0 auto; color: #d9534f; font-weight: 600; font-family: 'Noto Sans TC', sans-serif; text-align: center;">
+    此選手尚無壓力評估紀錄。
+  </p>
 {% endif %}
-

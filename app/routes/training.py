@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from datetime import datetime
-import json
 import logging
 
 from app.models.training import Training
@@ -85,11 +84,26 @@ def save_today_training():
         flash(f"儲存錯誤：{e}", "danger")
     return redirect(url_for("auth.dashboard"))
 
+@training_bp.route('/view', methods=['GET'])
+@login_required
+def view_training_records():
+    """
+    學生查看自己所有上傳的訓練資料（歷史紀錄）
+    可選擇日期查詢
+    """
+    selected_date = request.args.get('date')  # 可選擇日期
+    with get_db() as db:
+        query = db.query(Training).filter_by(user_id=current_user.id).order_by(Training.date.desc())
+        
+        if selected_date:
+            try:
+                date_obj = datetime.strptime(selected_date, "%Y-%m-%d").date()
+                query = query.filter_by(date=date_obj)
+            except Exception as e:
+                flash("日期格式錯誤", "danger")
+
+        records = query.all()
+
+    return render_template('athlete/view_records.html', records=records, selected_date=selected_date)
 
 
-@training_bp.app_template_filter('from_json')
-def from_json(value):
-    try:
-        return json.loads(value) if value else []
-    except Exception:
-        return []
