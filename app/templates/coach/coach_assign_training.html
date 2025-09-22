@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>派發訓練 - 教練端</title>
+  <style>
+    body {
+      font-family: "Noto Sans TC", sans-serif;
+      max-width: 720px;
+      margin: 30px auto;
+      padding: 0 15px;
+      background-color: #f7f9fc;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #333;
+    }
+    a.button {
+      display: inline-block;
+      padding: 8px 12px;
+      background: #3498db;
+      color: white;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+    a.button:hover {
+      background: #2980b9;
+    }
+    form {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+    }
+    label {
+      font-weight: 600;
+      margin-top: 15px;
+      display: block;
+      color: #444;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 1.5px solid #ccc;
+      margin-top: 8px;
+      box-sizing: border-box;
+    }
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    .technical-item {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .technical-item input {
+      flex: 1 1 150px;
+      padding: 8px 10px;
+      font-size: 0.95rem;
+      border-radius: 5px;
+      border: 1.3px solid #ccc;
+      min-width: 0;
+    }
+    .technical-item button.remove-item {
+      flex: 0 0 auto;
+      background: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-weight: 700;
+      white-space: nowrap;
+      transition: background-color 0.2s;
+    }
+    .technical-item button.remove-item:hover {
+      background: #c0392b;
+    }
+    #add-technical-item {
+      margin-top: 15px;
+      padding: 10px 15px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    #add-technical-item:hover {
+      background-color: #2980b9;
+    }
+    button[type="submit"] {
+      margin-top: 30px;
+      width: 100%;
+      padding: 12px 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button[type="submit"]:hover {
+      background-color: #1e8449;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 返回教練端按鈕 -->
+  <div style="max-width:720px; margin: 20px auto; text-align: left;">
+    <a href="{{ url_for('coach.dashboard') }}" class="button">← 返回教練端</a>
+  </div>
+
+  <h1>派發訓練</h1>
+
+  <form method="POST" style="max-width:720px; margin: 30px auto;">
+    <!-- 日期選擇器 -->
+    <label for="date">選擇日期</label>
+    <input type="date" id="date" name="date" required
+           value="{{ record.date or current_date }}" />
+
+    <!-- 選手下拉選單 -->
+    <label for="athlete_id">選擇選手：</label>
+    <select id="athlete_id" name="athlete_id" required>
+      {% for athlete in athletes %}
+        <option value="{{ athlete.id }}">{{ athlete.full_name }}</option>
+      {% endfor %}
+    </select>
+
+    <!-- 體能訓練內容 -->
+    <label for="coach_assigned_physical">體能訓練內容</label>
+    <textarea id="coach_assigned_physical" name="coach_assigned_physical" placeholder="請輸入體能訓練內容">{{ record.coach_assigned_physical or '' }}</textarea>
+
+    <!-- 技巧訓練項目 -->
+    <label>技巧訓練項目</label>
+    <div id="technical-items">
+      {% if record and record.coach_assigned_technical %}
+        {% for item in record.coach_assigned_technical | from_json %}
+        <div class="technical-item">
+          <input type="text" name="technical_category[]" placeholder="類別" value="{{ item.category }}">
+          <input type="text" name="technical_topic[]" placeholder="主題" value="{{ item.topic }}">
+          <input type="text" name="technical_duration[]" placeholder="時間/次數" value="{{ item.duration_or_reps }}">
+          <input type="text" name="technical_focus[]" placeholder="重點" value="{{ item.focus }}">
+          <button type="button" class="remove-item">刪除</button>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="technical-item">
+          <input type="text" name="technical_category[]" placeholder="類別">
+          <input type="text" name="technical_topic[]" placeholder="主題">
+          <input type="text" name="technical_duration[]" placeholder="時間/次數">
+          <input type="text" name="technical_focus[]" placeholder="重點">
+          <button type="button" class="remove-item">刪除</button>
+        </div>
+      {% endif %}
+    </div>
+
+    <button type="button" id="add-technical-item">新增技巧訓練項目</button>
+    <button type="submit">儲存派發</button>
+  </form>
+
+  <script>
+    // 新增技巧訓練項目
+    document.getElementById('add-technical-item').addEventListener('click', function() {
+      const container = document.getElementById('technical-items');
+      const item = document.createElement('div');
+      item.className = 'technical-item';
+      item.innerHTML = `
+        <input type="text" name="technical_category[]" placeholder="類別" />
+        <input type="text" name="technical_topic[]" placeholder="主題" />
+        <input type="text" name="technical_duration[]" placeholder="時間/次數" />
+        <input type="text" name="technical_focus[]" placeholder="重點" />
+        <button type="button" class="remove-item">刪除</button>
+      `;
+      container.appendChild(item);
+    });
+
+    // 刪除技巧訓練項目
+    document.getElementById('technical-items').addEventListener('click', function(e){
+      if(e.target.classList.contains('remove-item')){
+        e.target.parentElement.remove();
+      }
+    });
+  </script>
+
+</body>
+</html>

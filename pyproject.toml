@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "alembic>=1.15.2",
+    "apscheduler>=3.11.0",
     "dotenv>=0.9.9",
     "flask>=3.1.0",
     "flask-login>=0.6.3",
@@ -14,7 +15,9 @@ dependencies = [
     "langchain-community>=0.3.26",
     "line-bot-sdk>=3.17.1",
     "openai>=1.97.0",
+    "pillow>=11.3.0",
     "pymysql>=1.1.1",
+    "pytz>=2025.2",
     "werkzeug>=3.1.3",
 ]
 

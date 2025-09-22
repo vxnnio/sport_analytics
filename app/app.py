@@ -13,9 +13,10 @@ from app.routes.evaluation import evaluation_bp
 from app.routes.athlete import athlete_bp
 from app.routes.chat import chat_bp
 from app.routes.food import bp as food_bp
-import os
+import os,json
 from app.routes.voice import voice_bp
 from app.routes.line_bot import line_bp
+from app.routes.food import bp as food_bp
 from app.models import User
 from app.models.announcement import Announcement
 from app.models.sleep_record import SleepRecord 
@@ -51,9 +52,10 @@ def create_app():
     app.register_blueprint(training_bp, url_prefix='/training')
     app.register_blueprint(evaluation_bp, url_prefix='/evaluation')
     app.register_blueprint(athlete_bp)
+    app.register_blueprint(food_bp)  # 新增這一行
     app.register_blueprint(voice_bp)
     app.register_blueprint(chat_bp, url_prefix='/chatbot')
-    app.register_blueprint(food_bp, url_prefix='/food')
+    app.register_blueprint(stress_bp)
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -67,7 +69,12 @@ def create_app():
         create_rich_menu()
     except Exception as e:
         print(f"[RichMenu Error] {e}")
-
+    # 註冊 from_json 過濾器
+    @app.template_filter('from_json')
+    def from_json_filter(s):
+        if s:
+            return json.loads(s)
+        return []
     return app
 
 

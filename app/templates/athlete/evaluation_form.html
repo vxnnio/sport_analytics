@@ -1,156 +1,52 @@
+<!-- templates/athlete/evaluation_form.html -->
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>每日訓練狀況評估</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <style>
-    body {
-      background-color: #FDFCF7;
-      font-family: 'Noto Sans', sans-serif;
-    }
-    .card-yellow {
-      background-color: #FFFBE6;
-      border: none;
-      border-radius: 12px;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    }
-    .card-yellow:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    }
-    .section-title {
-      font-weight: 600;
-      margin-bottom: 8px;
-      font-size: 1.05rem;
-      color: #333;
-    }
-    .form-select, textarea {
-      border-radius: 8px;
-    }
-    .btn-yellow {
-      background-color: #F9C300;
-      color: #1a1a1a;
-      font-weight: 600;
-      border: none;
-      border-radius: 8px;
-      transition: all 0.2s ease;
-    }
-    .btn-yellow:hover {
-      background-color: #e5b100;
-      color: #000;
-    }
-    .icon-circle {
-      width: 40px;
-      height: 40px;
-      background-color: #F9C300;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-      color: #1a1a1a;
-      margin-right: 10px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>今日評估</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
+<div class="container py-4">
+    <h3 class="mb-4">今日評估</h3>
 
-<div class="container py-5">
-  <h3 class="fw-bold mb-4 text-center text-dark">📋 今日訓練狀況評估</h3>
-  
-  <form method="POST" class="row g-4">
-    <div class="col-12">
-      <div class="card card-yellow p-3">
-        <div class="d-flex align-items-center mb-2">
-          <div class="icon-circle">💪</div>
-          <div class="section-title">訓練狀況</div>
+    <form method="POST" action="{{ url_for('evaluation.save_evaluation') }}">
+        <input type="hidden" name="selected_date" value="{{ current_date }}">
+
+        {% set fields = ['training_status', 'fitness', 'sleep', 'appetite'] %}
+        {% set labels = ['訓練狀況', '體能', '睡眠', '食慾'] %}
+
+        {% for field, label in zip(fields, labels) %}
+        <div class="card p-3 mb-3">
+            <label class="form-label">{{ label }}</label>
+            <select class="form-select" name="{{ field }}" required>
+                <option value="">請選擇</option>
+                {% for i in range(1,6) %}
+                    {% if record %}
+                        {% set value = getattr(record, field) %}
+                        <option value="{{ i }}" {% if value == i %}selected{% endif %}>{{ i }}</option>
+                    {% else %}
+                        <option value="{{ i }}">{{ i }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
         </div>
-        <select name="training_status" class="form-select" required>
-          <option value="">請選擇</option>
-          <option value="😆">非常良好</option>
-          <option value="😀">良好</option>
-          <option value="🙂">普通</option>
-          <option value="☹️">欠佳</option>
-          <option value="😭">非常糟</option>
-        </select>
-      </div>
-    </div>
+        {% endfor %}
 
-    <div class="col-12">
-      <div class="card card-yellow p-3">
-        <div class="d-flex align-items-center mb-2">
-          <div class="icon-circle">⚡</div>
-          <div class="section-title">體能狀況</div>
+        <div class="card p-3 mb-3">
+            <label class="form-label">備註</label>
+            <textarea name="note" class="form-control" rows="3">{{ record.note if record else '' }}</textarea>
         </div>
-        <select name="fitness" class="form-select" required>
-          <option value="">請選擇</option>
-          <option value="😆">非常良好</option>
-          <option value="😀">良好</option>
-          <option value="🙂">普通</option>
-          <option value="☹️">欠佳</option>
-          <option value="😭">非常糟</option>
-        </select>
-      </div>
-    </div>
 
-    <div class="col-12">
-      <div class="card card-yellow p-3">
-        <div class="d-flex align-items-center mb-2">
-          <div class="icon-circle">😴</div>
-          <div class="section-title">睡眠狀況</div>
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary">提交評估</button>
         </div>
-        <select name="sleep" class="form-select" required>
-          <option value="">請選擇</option>
-          <option value="😆">非常良好</option>
-          <option value="😀">良好</option>
-          <option value="🙂">普通</option>
-          <option value="☹️">欠佳</option>
-          <option value="😭">非常糟</option>
-        </select>
-      </div>
-    </div>
+    </form>
 
-    <div class="col-12">
-      <div class="card card-yellow p-3">
-        <div class="d-flex align-items-center mb-2">
-          <div class="icon-circle">🍽️</div>
-          <div class="section-title">食慾狀況</div>
-        </div>
-        <select name="appetite" class="form-select" required>
-          <option value="">請選擇</option>
-          <option value="😆">非常良好</option>
-          <option value="😀">良好</option>
-          <option value="🙂">普通</option>
-          <option value="☹️">欠佳</option>
-          <option value="😭">非常糟</option>
-        </select>
-      </div>
+    <div class="text-center mt-3">
+        <a href="{{ url_for('evaluation.view_evaluation_records') }}" class="btn btn-outline-secondary">返回歷史紀錄</a>
     </div>
-
-    <div class="col-12">
-      <div class="card card-yellow p-3">
-        <div class="d-flex align-items-center mb-2">
-          <div class="icon-circle">📝</div>
-          <div class="section-title">備註</div>
-        </div>
-        <textarea name="note" rows="3" class="form-control"></textarea>
-      </div>
-    </div>
-
-    <div class="col-12 text-center">
-      <button type="submit" class="btn btn-yellow px-5 py-2">送出評估</button>
-    </div>
-  </form>
-
-  <div class="text-center mt-4">
-    <a href="/auth/dashboard" class="btn btn-outline-secondary">⬅️ 返回主頁</a>
-  </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

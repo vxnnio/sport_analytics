@@ -1,5 +1,3 @@
-# app/routes/coach.py
-
 from flask import Blueprint, render_template, request, redirect, url_for
 from flask import flash
 from datetime import datetime
@@ -13,6 +11,8 @@ from app.database import SessionLocal
 from flask import jsonify
 from app.models import Announcement
 from app.models import StressEvaluate
+from app.models import Training
+import json
 
 
 
@@ -227,15 +227,6 @@ def sleep_record():
         start_date=start_date,
         end_date=end_date
     )
-
-
-
-
-
-
-
-
-
 @coach_bp.route("/api/announcements", methods=["GET"])
 def api_announcements():
     with get_db() as session:
@@ -256,9 +247,6 @@ def api_announcements():
         ]
 
         return jsonify(result)
-
-
-
 
 @coach_bp.route('/stress_query', methods=['GET', 'POST'])
 @login_required
@@ -303,3 +291,53 @@ def stress_query():
         score=score,
         suggestion=suggestion
     )
+    
+@coach_bp.route('/assign_training', methods=['GET', 'POST'])
+def assign_training():
+    db = SessionLocal()
+
+    athlete_id = request.args.get('athlete_id')
+    date = request.args.get('date')
+
+    # 取所有選手清單
+    athletes = db.query(User).all()  # 假設 User 是選手模型
+
+    if request.method == 'POST':
+        athlete_id = request.form.get('athlete_id') or athlete_id
+        date = request.form.get('date') or date
+
+    record = db.query(Training).filter_by(user_id=athlete_id, date=date).first()
+
+    if not record:
+        record = Training(user_id=athlete_id, date=date)
+
+    if request.method == 'POST':
+        record.coach_assigned_physical = request.form.get('coach_assigned_physical', '')
+
+        technical_items = []
+        categories = request.form.getlist('technical_category[]')
+        topics = request.form.getlist('technical_topic[]')
+        durations = request.form.getlist('technical_duration[]')
+        focuses = request.form.getlist('technical_focus[]')
+
+        for cat, top, dur, foc in zip(categories, topics, durations, focuses):
+            if cat.strip() or top.strip():
+                technical_items.append({
+                    "category": cat.strip(),
+                    "topic": top.strip(),
+                    "duration_or_reps": dur.strip(),
+                    "focus": foc.strip()
+                })
+
+        record.coach_assigned_technical = json.dumps(technical_items, ensure_ascii=False)
+
+        db.add(record)
+        db.commit()
+        db.close()
+
+        return redirect(url_for('coach.assign_training', athlete_id=athlete_id, date=date))
+
+    db.close()
+    # 一定要傳 athletes 給模板
+    return render_template('coach/coach_assign_training.html', record=record, athletes=athletes)
+

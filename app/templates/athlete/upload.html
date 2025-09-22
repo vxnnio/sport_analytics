@@ -68,7 +68,7 @@
 </head>
 <body>
   <div class="container py-4">
-    <h3 class="fw-bold mb-4 text-center text-dark">🏋️ 今日訓練主頁</h3>
+    <h4>今日訓練主頁</h4>
 
     <!-- Flash 訊息顯示 -->
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -182,20 +182,85 @@
         <button class="btn btn-yellow px-5 py-2" type="submit">💾 儲存今日所有訓練紀錄</button>
       </div>
 
+      <!-- 返回學生端 -->
+      <div class="text-center mt-3">
+        <a href="/athlete/dashboard" class="btn btn-secondary">← 返回學生端</a>
+      </div>
+
+      <!-- 返回學生端 -->
+      <div class="text-center mt-3">
+        <a href="/athlete/dashboard" class="btn btn-secondary">← 返回學生端</a>
+      </div>
+
       <!-- Modal: 體能訓練 -->
       <div class="modal fade" id="modalPhysical" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header"><h5>體能訓練紀錄</h5></div>
             <div class="modal-body">
-              <div class="mb-2"><label>跳繩種類</label><input type="text" name="jump_type" class="form-control" value="{{ record.jump_type or '' }}"/></div>
-              <div class="mb-2"><label>跳繩次數</label><input type="number" name="jump_count" class="form-control" value="{{ record.jump_count or '' }}"/></div>
-              <div class="mb-2"><label>跑步距離</label><input type="text" name="run_distance" class="form-control" value="{{ record.run_distance or '' }}"/></div>
-              <div class="mb-2"><label>跑步時間</label><input type="text" name="run_time" class="form-control" value="{{ record.run_time or '' }}"/></div>
-              <div class="mb-2"><label>重量訓練</label><input type="text" name="weight_sets" class="form-control" value="{{ record.weight_sets or '' }}"/></div>
-              <div class="mb-2"><label>敏捷訓練</label><input type="text" name="agility_type" class="form-control" value="{{ record.agility_type or '' }}"/></div>
-              <div class="mb-2"><label>備註</label><textarea name="agility_note" class="form-control">{{ record.agility_note or '' }}</textarea></div>
-              <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">確認</button></div>
+              <div class="mb-2">
+                <label for="jump_type">跳繩種類</label>
+                <select name="jump_type" id="jump_type" class="form-control" required>
+                  <option value="" disabled {{ 'selected' if not record.jump_type }}>請選擇跳繩種類</option>
+                  <option value="Basic" {{ 'selected' if record.jump_type == 'Basic' }}>基本繩</option>
+                  <option value="Speed" {{ 'selected' if record.jump_type == 'Speed' }}>速度繩</option>
+                  <option value="Weighted" {{ 'selected' if record.jump_type == 'Weighted' }}>重量繩</option>
+                  <option value="Freestyle" {{ 'selected' if record.jump_type == 'Freestyle' }}>花式繩</option>
+                </select>
+              </div>
+
+              <div class="mb-2">
+                <label>跳繩次數</label>
+                <input
+                  type="number"
+                  name="jump_count"
+                  class="form-control"
+                  value="{{ record.jump_count or '' }}"
+                />
+              </div>
+              <div class="mb-2">
+                <label>跑步距離</label>
+                <input
+                  type="text"
+                  name="run_distance"
+                  class="form-control"
+                  value="{{ record.run_distance or '' }}"
+                />
+              </div>
+              <div class="mb-2">
+                <label>跑步時間</label>
+                <input
+                  type="text"
+                  name="run_time"
+                  class="form-control"
+                  value="{{ record.run_time or '' }}"
+                />
+              </div>
+              <div class="mb-2">
+                <label>重量訓練</label>
+                <input
+                  type="text"
+                  name="weight_sets"
+                  class="form-control"
+                  value="{{ record.weight_sets or '' }}"
+                />
+              </div>
+              <div class="mb-2">
+                <label>敏捷訓練</label>
+                <input
+                  type="text"
+                  name="agility_type"
+                  class="form-control"
+                  value="{{ record.agility_type or '' }}"
+                />
+              </div>
+              <div class="mb-2">
+                <label>備註</label>
+                <textarea name="agility_note" class="form-control">{{ record.agility_note or '' }}</textarea>
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">確認</button>
+              </div>
             </div>
           </div>
         </div>
