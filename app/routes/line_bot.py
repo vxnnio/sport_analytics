@@ -56,28 +56,37 @@ handler = WebhookHandler(LINE_CHANNEL_SECRET)
 def handle_image_message(event):
     line_id = event.source.user_id
 
-    with get_db() as session:
-        user = session.query(User).filter_by(line_user_id=line_id).first()
-        if not user:
-            line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(text="❌ 您尚未綁定帳號，請輸入：綁定 <帳號>")
-            )
-            return
-
     message_content = line_bot_api.get_message_content(event.message.id)
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
     filepath = os.path.join(UPLOAD_FOLDER, filename)
 
+    # 儲存圖片
     with open(filepath, "wb") as f:
         for chunk in message_content.iter_content():
             f.write(chunk)
 
+    # 取得使用者
     with get_db() as session:
+        user = session.query(User).filter_by(line_user_id=line_id).first()
+        if not user:
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text="❌ 找不到使用者，請先綁定帳號")
+            )
+            return
+
         session.execute(
-            text("INSERT INTO food_photos (athlete_id, athlete_username, filename, upload_time) ""VALUES (:athlete_id, :athlete_username, :filename, :upload_time)"),
-            {"athlete_id": current_user.id, "athlete_username": current_user.username, "filename": filename,"upload_time": datetime.now()}
+            text(
+                "INSERT INTO food_photos (athlete_id, athlete_username, filename, upload_time) "
+                "VALUES (:athlete_id, :athlete_username, :filename, :upload_time)"
+            ),
+            {
+                "athlete_id": user.id,
+                "athlete_username": user.username,
+                "filename": filename,
+                "upload_time": datetime.now()
+            }
         )
         session.commit()
 
@@ -85,6 +94,7 @@ def handle_image_message(event):
         event.reply_token,
         TextSendMessage(text="✅ 圖片已上傳！")
     )
+
 
 
 @line_bp.route("/callback", methods=['POST'])
@@ -131,7 +141,7 @@ def handle_message(event):
         line_bot_api.reply_message(event.reply_token, flex_message)
 
     else:
-        reply = "請輸入「公告」、「出席」、「訓練表」或「綁定 <帳號>」"
+        reply = "可輸入「公告」、「出席」、「訓練表」或「綁定 <帳號id>」以了解各項資訊"
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
 
 def bind_account(username, line_id):
@@ -189,7 +199,7 @@ def get_user_by_line_id(line_id):
 
 
 def get_announcements():
-    url = "https://3309ba8c2e0d.ngrok-free.app/coach/api/announcements"
+    url = "https://ce5f9df1750d.ngrok-free.app/coach/api/announcements"
     try:
         res = requests.get(url)
         if res.status_code == 200:
@@ -247,7 +257,7 @@ def get_evaluation_card():
                     "action": {
                         "type": "uri",
                         "label": "前往填寫",
-                        "uri": "https://3309ba8c2e0d.ngrok-free.app/evaluation/form"
+                        "uri": "https://ce5f9df1750d.ngrok-free.app/evaluation/form"
                     }
                 }
             ]
@@ -258,14 +268,15 @@ def get_evaluation_card():
 
 def create_rich_menu():
     rich_menu = RichMenu(
-        size={"width": 2500, "height": 843},  # 高度 843 剛好可以放三個按鈕
+        size={"width": 2500, "height": 1686},  # 高度改成 1686，3×2 格
         selected=True,
         name="功能選單",
         chat_bar_text="選單",
         areas=[
+            # 上排三格
             RichMenuArea(
                 bounds=RichMenuBounds(x=0, y=0, width=833, height=843),
-                action=MessageAction(label="公告", text="公告")
+                action=MessageAction(label="訓練表", text="訓練表")
             ),
             RichMenuArea(
                 bounds=RichMenuBounds(x=834, y=0, width=833, height=843),
@@ -273,16 +284,27 @@ def create_rich_menu():
             ),
             RichMenuArea(
                 bounds=RichMenuBounds(x=1667, y=0, width=833, height=843),
-                action=MessageAction(label="訓練表", text="訓練表")
+                action=MessageAction(label="公告", text="公告")
+            ),
+
+            # 下排三格
+            RichMenuArea(
+                bounds=RichMenuBounds(x=0, y=843, width=833, height=843),
+                action=MessageAction(label="功能", text="功能")
+            ),
+            # 中間 Logo → 不設定動作 (可以留空，或回傳提示)
+            RichMenuArea(bounds=RichMenuBounds(x=834, y=843, width=833, height=843),
+                action=MessageAction(label="Logo", text="這是 PingPro Logo 😃")),
+            RichMenuArea(
+                bounds=RichMenuBounds(x=1667, y=843, width=833, height=843),
+                action={"type": "uri", "label": "網站", "uri": "https://ce5f9df1750d.ngrok-free.app"}
             ),
         ]
     )
-
     # 建立 Rich Menu
     rich_menu_id = line_bot_api.create_rich_menu(rich_menu=rich_menu)
     print("✅ Rich Menu 建立成功，ID:", rich_menu_id)
 
-    # 綁定圖片（你要把圖片放在 uploads/richmenu/ 下）
     image_path = "static/richmenu.png"
     if os.path.exists(image_path):
         with open(image_path, "rb") as f:
