@@ -1,129 +1,132 @@
-<div class="container mt-5">
-  <div class="row">
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>睡眠紀錄</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            padding: 30px 0;
+            font-family: "Noto Sans TC", sans-serif;
+        }
+        .container-card {
+            max-width: 900px;
+            width: 100%;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            background-color: #fff;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #343a40;
+        }
+        .form-inline {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .form-inline .form-control, .form-inline .form-select, .form-inline button {
+            min-width: 150px;
+        }
+        .table-responsive {
+            display: flex;
+            justify-content: center;
+        }
+        table {
+            width: auto;
+            min-width: 600px;
+        }
+        .table thead {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-group-center {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container-card">
 
-    <!-- 📝 左側：新增睡眠紀錄 -->
-    <div class="col-md-6">
-      <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-          <h5 class="mb-0">新增睡眠紀錄🖊</h5>
-        </div>
-        <div class="card-body">
-          <form method="POST">
-            <div class="mb-3">
-              <label class="form-label">選擇選手</label>
-              <select class="form-select" name="athlete_id" required>
-                <option value="" disabled selected>請選擇選手</option>
-                {% for athlete in athletes %}
-                  <option value="{{ athlete.id }}">{{ athlete.username }}</option>
-                {% endfor %}
-              </select>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">紀錄日期</label>
-              <input type="date" name="record_date" class="form-control" required>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">入睡時間</label>
-              <input type="time" name="sleep_start" class="form-control" required>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">起床時間</label>
-              <input type="time" name="sleep_end" class="form-control" required>
-            </div>
-
-            <div class="d-grid">
-              <button type="submit" class="btn btn-primary">儲存紀錄</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <!-- 📊 右側：查詢紀錄 -->
-    <div class="col-md-6">
-      <div class="card shadow">
-        <div class="card-header bg-secondary text-white">
-          <h5 class="mb-0">查詢睡眠紀錄📜</h5>
-        </div>
-        <div class="card-body">
-
-          <!-- 🔙 回首頁按鈕 -->
-          <div class="mb-3 text-end">
-            <a href="{{ url_for('coach.dashboard') }}" class="btn btn-outline-primary">
-              ← 回到教練首頁
-            </a>
-          </div>
-
-          <!-- 查詢表單 -->
-          <form method="GET" action="{{ url_for('coach.sleep_record') }}" class="row g-2 mb-3">
-            <div class="col-12">
-              <label class="form-label">選擇選手</label>
-              <select class="form-select" name="athlete_id">
+    <!-- 篩選卡片 -->
+    <div class="card">
+        <h2>睡眠紀錄查詢</h2>
+        <form method="get" class="form-inline">
+            <select name="athlete_id" class="form-select">
                 <option value="">全部選手</option>
                 {% for athlete in athletes %}
-                  <option value="{{ athlete.id }}">{{ athlete.username }}</option>
+                    <option value="{{ athlete.id }}" {% if athlete.id|string == selected_athlete %}selected{% endif %}>
+                        {{ athlete.full_name }}
+                    </option>
                 {% endfor %}
-              </select>
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label">起始日期</label>
-              <input type="date" name="start_date" class="form-control">
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label">結束日期</label>
-              <input type="date" name="end_date" class="form-control">
-            </div>
-
-            <div class="col-12">
-              <button type="submit" class="btn btn-outline-secondary w-100">查詢</button>
-            </div>
-          </form>
-
-          <!-- 查詢結果表格 -->
-          {% if records %}
-            <div class="table-responsive">
-              <table class="table table-bordered table-sm align-middle">
-                <thead class="table-light">
-                  <tr>
-                    <th>日期</th>
-                    <th>入睡</th>
-                    <th>起床</th>
-                    <th>睡眠時數</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for r in records %}
-                    <tr>
-                      <td>{{ r.record_date }}</td>
-                      <td>{{ r.sleep_start }}</td>
-                      <td>{{ r.sleep_end }}</td>
-                      <td>
-                        {% if r.sleep_start_dt and r.sleep_end_dt %}
-                          {% set duration = r.sleep_end_dt - r.sleep_start_dt %}
-                          {{ duration.seconds // 3600 }} 小時 {{ (duration.seconds % 3600) // 60 }} 分鐘
-                        {% else %}
-                          無法計算
-                        {% endif %}
-                      </td>
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          {% else %}
-            <p class="text-muted">尚無符合的紀錄。</p>
-          {% endif %}
-
-        </div>
-      </div>
+            </select>
+            <input type="date" name="start_date" value="{{ start_date }}" class="form-control">
+            <input type="date" name="end_date" value="{{ end_date }}" class="form-control">
+            <button type="submit" class="btn btn-primary">查詢</button>
+        </form>
     </div>
 
-  </div>
+    <!-- 紀錄表格卡片 -->
+    <div class="card">
+        <h2>歷史紀錄</h2>
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered text-center align-middle">
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>睡眠開始</th>
+                        <th>睡眠結束</th>
+                        <th>睡眠時長</th>
+                        <th>選手姓名</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for r in records %}
+                    <tr>
+                        <td>{{ r.record_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ r.sleep_start.strftime('%H:%M') }}</td>
+                        <td>{{ r.sleep_end.strftime('%H:%M') }}</td>
+                        <td>
+                            {% if r.sleep_duration %}
+                                {{ r.sleep_duration.seconds // 3600 }} 小時
+                                {{ (r.sleep_duration.seconds // 60) % 60 }} 分鐘
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>{{ r.athlete.full_name }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5">尚無紀錄</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 按鈕置中 -->
+        <div class="btn-group-center">
+            <a href="{{ url_for('coach.dashboard') }}" class="btn btn-secondary btn-lg">返回主頁</a>
+            <a href="{{ url_for('coach.sleep_record') }}" class="btn btn-success btn-lg">新增紀錄</a>
+        </div>
+    </div>
+
 </div>
 
-
+<script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+</body>
+</html>

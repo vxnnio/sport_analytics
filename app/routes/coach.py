@@ -1,17 +1,11 @@
-from flask import Blueprint, render_template, request, redirect, url_for
-from flask import flash
-from datetime import datetime
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from app.models import Training,SleepRecord,Announcement,StressEvaluate,User,Attendance
+from datetime import datetime,timedelta
 from app.database import get_db
-from app.models.announcement import Announcement
-from app.models.user import User  
-from app.models.attendance import Attendance
-from flask_login import login_required
-from flask_login import current_user
+from flask_login import login_required,current_user
 from app.database import SessionLocal
 from flask import jsonify
-from app.models import Announcement
-from app.models import StressEvaluate
-from app.models import Training
+from sqlalchemy.orm import joinedload
 import json
 
 
@@ -146,79 +140,39 @@ def roll_call():
 
 
 
-@coach_bp.route('/sleep_record', methods=['GET', 'POST'])
+@coach_bp.route('/sleep_record', methods=['GET'])
+@login_required
 def sleep_record():
-    from app.models import User, SleepRecord
-    from datetime import datetime
-    db = SessionLocal()
-    
-    # 處理 POST 表單送出（新增紀錄）
-    if request.method == 'POST':
-        athlete_id = request.form['athlete_id']
-        record_date = request.form['record_date']
-        sleep_start = request.form['sleep_start']
-        sleep_end = request.form['sleep_end']
-        
-        # 防止重複新增
-        existing = db.query(SleepRecord).filter_by(
-            athlete_id=athlete_id,
-            record_date=record_date
-        ).first()
-        if existing:
-            flash("此選手在該日期已填寫過睡眠紀錄", "warning")
-        else:
-            record = SleepRecord(
-                athlete_id=athlete_id,
-                record_date=record_date,
-                sleep_start=sleep_start,
-                sleep_end=sleep_end,
-                created_by=current_user.id
-            )
-            db.add(record)
-            db.commit()
-            flash("睡眠紀錄已新增", "success")
-        
-        db.close()
-        return redirect(url_for('coach.sleep_record'))
-    
-    # GET 方法：查詢選項
+    if current_user.role != 'coach':
+        flash("只有教練可以查看此頁面", "danger")
+        return redirect(url_for('main.index'))
+
     athlete_id = request.args.get('athlete_id')
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
-    
-    athletes = db.query(User).filter(User.role == 'athlete').all()
-    
-    # 查詢紀錄
-    query = db.query(SleepRecord).join(
-        User, SleepRecord.athlete_id == User.id
-    ).order_by(SleepRecord.record_date.desc())
-    
-    if athlete_id:
-        query = query.filter(SleepRecord.athlete_id == athlete_id)
-    if start_date:
-        query = query.filter(SleepRecord.record_date >= start_date)
-    if end_date:
-        query = query.filter(SleepRecord.record_date <= end_date)
-    
-    records = query.all()
 
-    # ✅ 合併日期與時間為 datetime
-    for r in records:
-        try:
-            # sleep_start/end 是字串如 "22:30"，需轉為 datetime.time
-            start_time = datetime.strptime(r.sleep_start, "%H:%M").time()
-            end_time = datetime.strptime(r.sleep_end, "%H:%M").time()
-            
-            # 合併成完整 datetime 方便前端顯示
-            r.sleep_start_dt = datetime.combine(r.record_date, start_time)
-            r.sleep_end_dt = datetime.combine(r.record_date, end_time)
-        except Exception as e:
-            r.sleep_start_dt = None
-            r.sleep_end_dt = None
-            print(f"時間格式錯誤：{e}")  # 可視情況移除
+    with get_db() as db:
+        athletes = db.query(User).filter(User.role == 'athlete').all()
 
-    db.close()
-    
+        query = db.query(SleepRecord).options(joinedload(SleepRecord.athlete)).order_by(SleepRecord.record_date.desc())
+
+        if athlete_id:
+            query = query.filter(SleepRecord.athlete_id == athlete_id)
+        if start_date:
+            query = query.filter(SleepRecord.record_date >= start_date)
+        if end_date:
+            query = query.filter(SleepRecord.record_date <= end_date)
+
+        records = query.all()
+
+        # 計算睡眠時長
+        for r in records:
+            start_dt = datetime.combine(r.record_date, r.sleep_start)
+            end_dt = datetime.combine(r.record_date, r.sleep_end)
+            if end_dt <= start_dt:  # 跨日睡眠
+                end_dt += timedelta(days=1)
+            r.sleep_duration = end_dt - start_dt
+
     return render_template(
         'coach/sleep_record.html',
         athletes=athletes,

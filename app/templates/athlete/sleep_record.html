@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的睡眠紀錄</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-4">
+
+    <h2 class="mb-4">我的睡眠紀錄</h2>
+
+    <!-- 新增睡眠紀錄表單 -->
+    <form method="POST" class="mb-4">
+        <div class="row g-2">
+
+            <!-- 日期欄位 -->
+            <div class="col-md-4">
+                <label for="record_date" class="form-label">日期</label>
+                <input type="date" name="record_date" id="record_date" class="form-control" required>
+            </div>
+
+            <!-- 睡覺開始欄位 -->
+            <div class="col-md-4">
+                <label for="sleep_start" class="form-label">睡覺開始</label>
+                <input type="time" name="sleep_start" id="sleep_start" class="form-control" required>
+            </div>
+
+            <!-- 睡覺結束欄位 -->
+            <div class="col-md-4">
+                <label for="sleep_end" class="form-label">睡覺結束</label>
+                <input type="time" name="sleep_end" id="sleep_end" class="form-control" required>
+            </div>
+
+            <!-- 按鈕列：時間欄位下方並排 -->
+            <div class="col-md-2 d-grid mt-2">
+                <button type="submit" class="btn btn-primary">新增紀錄</button>
+            </div>
+            <div class="col-md-2 d-grid mt-2">
+                <a href="{{ url_for('main.index') }}" class="btn btn-secondary">⬅ 返回主頁</a>
+            </div>
+
+        </div>
+    </form>
+
+    <!-- 歷史紀錄表格 -->
+    <h4>歷史紀錄</h4>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>日期</th>
+                <th>開始時間</th>
+                <th>結束時間</th>
+                <th>睡眠時長</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in records %}
+            <tr>
+                <td>{{ r.record_date }}</td>
+                <td>{{ r.sleep_start }}</td>
+                <td>{{ r.sleep_end }}</td>
+                <td>
+                    {% if r.sleep_duration %}
+                        {{ r.sleep_duration.seconds // 3600 }} 小時 
+                        {{ (r.sleep_duration.seconds // 60) % 60 }} 分鐘
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

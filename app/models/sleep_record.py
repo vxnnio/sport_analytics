@@ -13,5 +13,7 @@ class SleepRecord(Base):
     created_by = Column(Integer, ForeignKey('user.id'), nullable=False)
 
 
-
+    # 關聯
+    athlete = relationship('User', foreign_keys=[athlete_id], backref='sleep_records')
+    creator = relationship('User', foreign_keys=[created_by])
 

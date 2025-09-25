@@ -107,3 +107,17 @@ def view_training_records():
     return render_template('athlete/view_records.html', records=records, selected_date=selected_date)
 
 
+@training_bp.route('/delete/<int:record_id>', methods=['POST'])
+@login_required
+def delete_training_record(record_id):
+    with get_db() as db:
+        record = db.query(Training).filter_by(id=record_id, user_id=current_user.id).first()
+        if not record:
+            flash("找不到紀錄或沒有權限刪除", "danger")
+            return redirect(url_for('training.view_training_records'))
+
+        db.delete(record)
+        db.commit()
+
+    flash("紀錄已刪除", "success")
+    return redirect(url_for('training.view_training_records'))

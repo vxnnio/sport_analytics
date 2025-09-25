@@ -16,7 +16,33 @@
 
     h1 {
       color: #004d40;
+      margin-top: 60px;
       margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    /* 返回按鈕 */
+    .back-btn {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background-color: #00796b;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .back-btn:hover {
+      background-color: #004d40;
     }
 
     #start-btn {
@@ -68,9 +94,12 @@
   </style>
 </head>
 <body>
+  <!-- 返回主控台按鈕 -->
+  <a href="{{ url_for('auth.dashboard') }}" class="back-btn">←</a>
+
   <h1>桌球語音助理 Demo</h1>
   <button id="start-btn">🎤 開始說話</button>
-
+  
   <div class="card">
     <p><span class="label">你說：</span><span id="user-text">（等待輸入中...）</span></p>
     <p><span class="label">助理回覆：</span><span id="bot-text">（等待回應中...）</span></p>

@@ -11,6 +11,16 @@
 <div class="container py-4">
     <h3 class="mb-4">今日評估</h3>
 
+    <!-- 數字評分說明 -->
+    <div class="alert alert-info" role="alert">
+        評分說明：<br>
+        <strong>5</strong> = 覺得不錯、狀態很好<br>
+        <strong>4</strong> = 還可以<br>
+        <strong>3</strong> = 普通<br>
+        <strong>2</strong> = 狀態較差<br>
+        <strong>1</strong> = 狀態很不好
+    </div>
+
     <form method="POST" action="{{ url_for('evaluation.save_evaluation') }}">
         <input type="hidden" name="selected_date" value="{{ current_date }}">
 
@@ -46,6 +56,7 @@
 
     <div class="text-center mt-3">
         <a href="{{ url_for('evaluation.view_evaluation_records') }}" class="btn btn-outline-secondary">返回歷史紀錄</a>
+        <a href="{{ url_for('auth.dashboard') }}" class="btn btn-outline-secondary">返回主控台</a>
     </div>
 </div>
 </body>
