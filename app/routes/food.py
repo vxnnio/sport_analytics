@@ -7,6 +7,7 @@ from sqlalchemy.orm import joinedload
 from app.models.food_photo import FoodPhoto
 from app.models.user import User
 from app.database import get_db   
+from flask import jsonify
 
 bp = Blueprint("food", __name__, url_prefix="/food")
 
@@ -52,7 +53,7 @@ def upload_food():
             session.commit()
 
         flash("照片上傳成功！", "success")
-        return redirect(url_for("food.view_food"))
+        return render_template("athlete/upload_food.html")
 
     return render_template("athlete/upload_food.html")
 
@@ -116,3 +117,19 @@ def delete_food(photo_id):
 
     flash("照片已刪除", "success")
     return redirect(url_for("food.view_food"))
+
+# ----------------------------
+# 只讀飲食紀錄（評論不可編輯、不可刪除）
+# ----------------------------
+@bp.route("/records")
+@login_required
+def food_records():
+    with get_db() as session:
+        # 取得所有食物照片，最新上傳在前
+        photos = (
+            session.query(FoodPhoto)
+            .order_by(FoodPhoto.upload_time.desc())
+            .all()
+        )
+    # 渲染只讀模板
+    return render_template("athlete/view_food_records.html", photos=photos)

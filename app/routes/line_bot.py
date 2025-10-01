@@ -14,6 +14,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime
 import pytz
 from linebot.models import ImageMessage
+from app.models.food_photo import FoodPhoto
+
 from PIL import Image
 from io import BytesIO
 from sqlalchemy import text
@@ -52,18 +54,21 @@ line_bp = Blueprint("line", __name__)
 line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
 
+from sqlalchemy import text
+
 @handler.add(MessageEvent, message=ImageMessage)
 def handle_image_message(event):
     line_id = event.source.user_id
-
     message_content = line_bot_api.get_message_content(event.message.id)
+
+    UPLOAD_FOLDER = os.path.join(os.getcwd(), "app", "static", "uploads", "food")
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
     filepath = os.path.join(UPLOAD_FOLDER, filename)
 
     # 儲存圖片
     with open(filepath, "wb") as f:
-        for chunk in message_content.iter_content():
+        for chunk in message_content.iter_content(chunk_size=1024):
             f.write(chunk)
 
     # 取得使用者
@@ -76,24 +81,21 @@ def handle_image_message(event):
             )
             return
 
-        session.execute(
-            text(
-                "INSERT INTO food_photos (athlete_id, athlete_username, filename, upload_time) "
-                "VALUES (:athlete_id, :athlete_username, :filename, :upload_time)"
-            ),
-            {
-                "athlete_id": user.id,
-                "athlete_username": user.username,
-                "filename": filename,
-                "upload_time": datetime.now()
-            }
+        # 使用 ORM 建議
+        new_photo = FoodPhoto(
+            athlete_id=user.id,
+            athlete_username=user.username,
+            filename=filename,
+            upload_time=datetime.now()
         )
+        session.add(new_photo)
         session.commit()
 
     line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(text="✅ 圖片已上傳！")
     )
+
 
 
 
@@ -199,7 +201,7 @@ def get_user_by_line_id(line_id):
 
 
 def get_announcements():
-    url = "https://ce5f9df1750d.ngrok-free.app/coach/api/announcements"
+    url = "https://a376b40e3319.ngrok-free.app/coach/api/announcements"
     try:
         res = requests.get(url)
         if res.status_code == 200:
@@ -257,7 +259,7 @@ def get_evaluation_card():
                     "action": {
                         "type": "uri",
                         "label": "前往填寫",
-                        "uri": "https://ce5f9df1750d.ngrok-free.app/evaluation/form"
+                        "uri": "https://a376b40e3319.ngrok-free.app/evaluation/form"
                     }
                 }
             ]
@@ -294,23 +296,19 @@ def create_rich_menu():
             ),
             # 中間 Logo → 不設定動作 (可以留空，或回傳提示)
             RichMenuArea(bounds=RichMenuBounds(x=834, y=843, width=833, height=843),
-                action=MessageAction(label="Logo", text="這是 PingPro Logo 😃")),
+                action=MessageAction(label="Logo", text="這是 PingPro Logo")),
             RichMenuArea(
                 bounds=RichMenuBounds(x=1667, y=843, width=833, height=843),
-                action={"type": "uri", "label": "網站", "uri": "https://ce5f9df1750d.ngrok-free.app"}
+                action={"type": "uri", "label": "網站", "uri": "https://a376b40e3319.ngrok-free.app"}
             ),
         ]
     )
     # 建立 Rich Menu
     rich_menu_id = line_bot_api.create_rich_menu(rich_menu=rich_menu)
-    print("✅ Rich Menu 建立成功，ID:", rich_menu_id)
-
     image_path = "static/richmenu.png"
     if os.path.exists(image_path):
         with open(image_path, "rb") as f:
             line_bot_api.set_rich_menu_image(rich_menu_id, "image/png", f)
-        print("✅ Rich Menu 圖片綁定成功")
 
     # 設為預設 Rich Menu
     line_bot_api.set_default_rich_menu(rich_menu_id)
-    print("✅ 設為預設 Rich Menu")
