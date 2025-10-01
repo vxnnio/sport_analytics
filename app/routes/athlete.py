@@ -6,6 +6,8 @@ from app.database import get_db
 from app.models.attendance import Attendance
 from app.models import SleepRecord
 from datetime import datetime, timedelta
+from sqlalchemy.orm import joinedload
+from app.models.task import Task
 
 athlete_bp = Blueprint("athlete", __name__, url_prefix="/athlete")
 
@@ -102,5 +104,42 @@ def sleep_record():
                 print(f"睡眠計算錯誤：{e}")
 
     return render_template('athlete/sleep_record.html', records=records)
+@athlete_bp.route("/tasks")
+@login_required
+def athlete_tasks():
+    with get_db() as db:
+        tasks = db.query(Task)\
+                  .options(joinedload(Task.athlete))\
+                  .filter_by(athlete_id=current_user.id, completed=False)\
+                  .all()
+    return render_template("athlete/training.html", tasks=tasks)
 
+# 學生標記完成
+@athlete_bp.route("/tasks/progress", methods=["POST"])
+@login_required
+def mark_progress():
+    if current_user.role != "athlete":
+        return jsonify({"error": "只有學生可以操作"}), 403
 
+    task_id = request.json.get("task_id")
+    with get_db() as db:
+        task = db.query(Task).filter_by(id=task_id).first()
+        if not task:
+            return jsonify({"status": "error", "message": "找不到任務"}), 404
+
+        task.completed = True
+        task.completed_at = datetime.utcnow()
+        task.athlete_id = current_user.id
+        db.commit()
+
+        return jsonify({"status": "success", "task_id": task_id})
+
+@athlete_bp.route("/history")
+@login_required
+def training_history():
+    # 查詢已完成任務
+    with get_db() as db:
+        completed_tasks = db.query(Task)\
+            .filter_by(athlete_id=current_user.id, completed=True)\
+            .order_by(Task.completed_at.desc()).all()
+    return render_template("athlete/history.html", tasks=completed_tasks)

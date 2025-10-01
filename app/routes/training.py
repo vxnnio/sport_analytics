@@ -2,8 +2,6 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from datetime import datetime
 import logging
-
-from app.models.training import Training
 from app.models.evaluation import Evaluation
 from app.models.announcement import Announcement
 from app.database import get_db

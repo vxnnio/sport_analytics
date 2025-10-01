@@ -1,5 +1,4 @@
 from .evaluation import Evaluation
-from .training import Training
 from .user import User
 from .announcement import Announcement
 from .attendance import Attendance
@@ -15,7 +14,6 @@ from .food_photo import FoodPhoto
 __all__ = [
     "Announcement",
     "Evaluation",
-    "Training",
     "User",
     "Attendance",
     "StressEvaluate"
