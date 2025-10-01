@@ -8,7 +8,6 @@ from app.routes.auth import auth_bp
 from app.routes.admin import admin_bp
 from app.routes.main import main_bp
 from app.routes.profile import profile_bp
-from app.routes.training import training_bp
 from app.routes.evaluation import evaluation_bp
 from app.routes.athlete import athlete_bp
 from app.routes.chat import chat_bp
@@ -49,7 +48,6 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(line_bp)
-    app.register_blueprint(training_bp, url_prefix='/training')
     app.register_blueprint(evaluation_bp, url_prefix='/evaluation')
     app.register_blueprint(athlete_bp)
     app.register_blueprint(food_bp)  # 新增這一行

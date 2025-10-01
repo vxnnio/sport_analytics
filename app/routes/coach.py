@@ -1,17 +1,13 @@
-from flask import Blueprint, render_template, request, redirect, url_for
-from flask import flash
-from datetime import datetime
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from app.models import SleepRecord,Announcement,StressEvaluate,User,Attendance
+from app.models.task import Task
+from datetime import datetime,timedelta
 from app.database import get_db
-from app.models.announcement import Announcement
-from app.models.user import User  
-from app.models.attendance import Attendance
-from flask_login import login_required
-from flask_login import current_user
+from flask_login import login_required,current_user
 from app.database import SessionLocal
 from flask import jsonify
-from app.models import Announcement
-from app.models import StressEvaluate
-from app.models import Training
+from sqlalchemy.orm import joinedload
+from sqlalchemy import func, Integer
 import json
 
 
@@ -146,79 +142,39 @@ def roll_call():
 
 
 
-@coach_bp.route('/sleep_record', methods=['GET', 'POST'])
+@coach_bp.route('/sleep_record', methods=['GET'])
+@login_required
 def sleep_record():
-    from app.models import User, SleepRecord
-    from datetime import datetime
-    db = SessionLocal()
-    
-    # 處理 POST 表單送出（新增紀錄）
-    if request.method == 'POST':
-        athlete_id = request.form['athlete_id']
-        record_date = request.form['record_date']
-        sleep_start = request.form['sleep_start']
-        sleep_end = request.form['sleep_end']
-        
-        # 防止重複新增
-        existing = db.query(SleepRecord).filter_by(
-            athlete_id=athlete_id,
-            record_date=record_date
-        ).first()
-        if existing:
-            flash("此選手在該日期已填寫過睡眠紀錄", "warning")
-        else:
-            record = SleepRecord(
-                athlete_id=athlete_id,
-                record_date=record_date,
-                sleep_start=sleep_start,
-                sleep_end=sleep_end,
-                created_by=current_user.id
-            )
-            db.add(record)
-            db.commit()
-            flash("睡眠紀錄已新增", "success")
-        
-        db.close()
-        return redirect(url_for('coach.sleep_record'))
-    
-    # GET 方法：查詢選項
+    if current_user.role != 'coach':
+        flash("只有教練可以查看此頁面", "danger")
+        return redirect(url_for('main.index'))
+
     athlete_id = request.args.get('athlete_id')
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
-    
-    athletes = db.query(User).filter(User.role == 'athlete').all()
-    
-    # 查詢紀錄
-    query = db.query(SleepRecord).join(
-        User, SleepRecord.athlete_id == User.id
-    ).order_by(SleepRecord.record_date.desc())
-    
-    if athlete_id:
-        query = query.filter(SleepRecord.athlete_id == athlete_id)
-    if start_date:
-        query = query.filter(SleepRecord.record_date >= start_date)
-    if end_date:
-        query = query.filter(SleepRecord.record_date <= end_date)
-    
-    records = query.all()
 
-    # ✅ 合併日期與時間為 datetime
-    for r in records:
-        try:
-            # sleep_start/end 是字串如 "22:30"，需轉為 datetime.time
-            start_time = datetime.strptime(r.sleep_start, "%H:%M").time()
-            end_time = datetime.strptime(r.sleep_end, "%H:%M").time()
-            
-            # 合併成完整 datetime 方便前端顯示
-            r.sleep_start_dt = datetime.combine(r.record_date, start_time)
-            r.sleep_end_dt = datetime.combine(r.record_date, end_time)
-        except Exception as e:
-            r.sleep_start_dt = None
-            r.sleep_end_dt = None
-            print(f"時間格式錯誤：{e}")  # 可視情況移除
+    with get_db() as db:
+        athletes = db.query(User).filter(User.role == 'athlete').all()
 
-    db.close()
-    
+        query = db.query(SleepRecord).options(joinedload(SleepRecord.athlete)).order_by(SleepRecord.record_date.desc())
+
+        if athlete_id:
+            query = query.filter(SleepRecord.athlete_id == athlete_id)
+        if start_date:
+            query = query.filter(SleepRecord.record_date >= start_date)
+        if end_date:
+            query = query.filter(SleepRecord.record_date <= end_date)
+
+        records = query.all()
+
+        # 計算睡眠時長
+        for r in records:
+            start_dt = datetime.combine(r.record_date, r.sleep_start)
+            end_dt = datetime.combine(r.record_date, r.sleep_end)
+            if end_dt <= start_dt:  # 跨日睡眠
+                end_dt += timedelta(days=1)
+            r.sleep_duration = end_dt - start_dt
+
     return render_template(
         'coach/sleep_record.html',
         athletes=athletes,
@@ -292,52 +248,86 @@ def stress_query():
         suggestion=suggestion
     )
     
-@coach_bp.route('/assign_training', methods=['GET', 'POST'])
-def assign_training():
-    db = SessionLocal()
 
-    athlete_id = request.args.get('athlete_id')
-    date = request.args.get('date')
 
-    # 取所有選手清單
-    athletes = db.query(User).all()  # 假設 User 是選手模型
+@coach_bp.route("/tasks", methods=["GET"])
+def view_tasks():
+    with get_db() as db:
+        tasks = db.query(Task).options(joinedload(Task.athlete)).all()
+        athletes = db.query(User).filter_by(role="athlete").all()  # ✅ 查出所有學生
+    return render_template("coach/training.html", tasks=tasks, athletes=athletes)
 
-    if request.method == 'POST':
-        athlete_id = request.form.get('athlete_id') or athlete_id
-        date = request.form.get('date') or date
 
-    record = db.query(Training).filter_by(user_id=athlete_id, date=date).first()
-
-    if not record:
-        record = Training(user_id=athlete_id, date=date)
-
-    if request.method == 'POST':
-        record.coach_assigned_physical = request.form.get('coach_assigned_physical', '')
-
-        technical_items = []
-        categories = request.form.getlist('technical_category[]')
-        topics = request.form.getlist('technical_topic[]')
-        durations = request.form.getlist('technical_duration[]')
-        focuses = request.form.getlist('technical_focus[]')
-
-        for cat, top, dur, foc in zip(categories, topics, durations, focuses):
-            if cat.strip() or top.strip():
-                technical_items.append({
-                    "category": cat.strip(),
-                    "topic": top.strip(),
-                    "duration_or_reps": dur.strip(),
-                    "focus": foc.strip()
-                })
-
-        record.coach_assigned_technical = json.dumps(technical_items, ensure_ascii=False)
-
-        db.add(record)
+# 派發任務
+@coach_bp.route("/tasks", methods=["POST"])
+def add_task():
+    data = request.json
+    athlete_id = data.get("athlete_id")  # 可指定學生
+    with get_db() as db:
+        new_task = Task(
+            category=data["category"],
+            item=data["item"],
+            description=data["description"],
+            athlete_id=athlete_id
+        )
+        db.add(new_task)
         db.commit()
-        db.close()
+        return jsonify({"status": "success", "task_id": new_task.id})
+    
+# 修改任務
+@coach_bp.route("/tasks/<int:task_id>", methods=["PUT"])
+def update_task(task_id):
+    data = request.json
+    with get_db() as db:
+        task = db.query(Task).filter(Task.id == task_id).first()
+        if not task:
+            return jsonify({"status": "error", "message": "任務不存在"}), 404
+        
+        # 更新欄位
+        task.category = data.get("category", task.category)
+        task.item = data.get("item", task.item)
+        task.description = data.get("description", task.description)
+        task.athlete_id = data.get("athlete_id", task.athlete_id)
 
-        return redirect(url_for('coach.assign_training', athlete_id=athlete_id, date=date))
+        db.commit()
+        return jsonify({"status": "success", "task_id": task.id})
 
-    db.close()
-    # 一定要傳 athletes 給模板
-    return render_template('coach/coach_assign_training.html', record=record, athletes=athletes)
+# 刪除任務
+@coach_bp.route("/tasks/<int:task_id>", methods=["DELETE"])
+def delete_task(task_id):
+    with get_db() as db:
+        task = db.query(Task).filter(Task.id == task_id).first()
+        if not task:
+            return jsonify({"status": "error", "message": "任務不存在"}), 404
+        
+        db.delete(task)
+        db.commit()
+        return jsonify({"status": "success", "message": f"任務 {task_id} 已刪除"})
 
+@coach_bp.route("/analysis")
+def analysis():
+    db = SessionLocal()
+    students = db.query(User).filter(User.role=="athlete").all()
+
+    stats = []
+    for s in students:
+        tasks = db.query(Task).filter(Task.athlete_id==s.id).all()
+        strength_total = sum(1 for t in tasks if t.category=="體能")
+        strength_completed = sum(1 for t in tasks if t.category=="體能" and t.completed)
+        skill_total = sum(1 for t in tasks if t.category=="技巧")
+        skill_completed = sum(1 for t in tasks if t.category=="技巧" and t.completed)
+        total = len(tasks)
+        total_completed = sum(1 for t in tasks if t.completed)
+
+        stats.append({
+            "full_name": s.full_name,
+            "username": s.username,
+            "strength_total": strength_total,
+            "strength_completed": strength_completed,
+            "skill_total": skill_total,
+            "skill_completed": skill_completed,
+            "total": total,
+            "total_completed": total_completed
+        })
+
+    return render_template("coach/analysis.html", stats=stats)

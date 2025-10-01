@@ -24,9 +24,9 @@ class User(Base):
 
     # 資料關聯
     announcements = relationship("Announcement", back_populates="coach")
-    trainings = relationship("Training", back_populates="user")
     evaluations = relationship("Evaluation", back_populates="user")
     stress_evaluate = relationship("StressEvaluate", back_populates="athlete")  # ✅ 新增：壓力評估資料
+    tasks = relationship("Task", back_populates="athlete")  # ✅ 改用 Task
 
     # Flask-Login 所需方法
     def is_active(self):

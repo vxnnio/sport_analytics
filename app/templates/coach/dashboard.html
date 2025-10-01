@@ -1,206 +1,216 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>教練主控台</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>教練綜合管理系統</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     body {
-      background-color: #FDFCF7;
+      background-color: #F4F7FA;
       font-family: 'Noto Sans', sans-serif;
+      color: #333;
     }
+    .navbar {
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .nav-link.text-warning { transition: 0.3s; }
+    .nav-link.text-warning:hover { color: #F9C300 !important; }
+    h2 { font-weight: 700; color: #1F3B6D; }
+    .profile-card {
+      background: #fff; border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      padding: 1.5rem; display: flex;
+      justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 1rem;
+      transition: transform 0.3s;
+    }
+    .profile-card:hover { transform: translateY(-4px); }
+    .profile-info h5 { margin: 0; font-weight: 700; }
+    .progress { height: 12px; border-radius: 10px; background-color: #E0E0E0; }
+    .progress-bar { background-color: #F9C300; }
+    .alert-warning {
+      background: #FFF8E1; border: none;
+      border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .announcement-card {
+      background: #fff; border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      padding: 1.5rem; display: flex; flex-direction: column;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .announcement-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+    }
+    .category-tag {
+      font-size: 0.85rem; padding: 0.25rem 0.5rem;
+      border-radius: 6px; font-weight: 500;
+    }
+    .訓練 { background: #E3F2FD; color: #1976D2; }
+    .賽事 { background: #FFEBEE; color: #D32F2F; }
+    .系統 { background: #FFF3E0; color: #FF8F00; }
     .card-yellow {
-      background-color: #FFFBE6;
-      border: none;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-      min-height: 240px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+      background: #FFF9E6; border: none; border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      display: flex; flex-direction: column; justify-content: center;
+      transition: transform 0.3s, box-shadow 0.3s;
     }
     .card-yellow:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    }
-    .btn-yellow {
-      background-color: #F9C300;
-      color: #1a1a1a;
-      font-weight: 600;
-      border: none;
-    }
-    .btn-yellow:hover {
-      background-color: #e5b100;
-      color: #000;
+      transform: translateY(-6px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.12);
     }
     .icon-circle {
-      width: 48px;
-      height: 48px;
-      background-color: #F9C300;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.3rem;
-      color: #1a1a1a;
-      margin: 0 auto;
+      width: 50px; height: 50px;
+      background-color: #F9C300; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; color: #1a1a1a; margin: 0 auto 1rem auto;
     }
-    .progress {
-      height: 8px;
-      background-color: #eee;
+    .btn-yellow {
+      background-color: #F9C300; color: #1a1a1a;
+      font-weight: 600; border-radius: 8px; border: none;
+      transition: 0.3s;
     }
-
+    .btn-yellow:hover { background-color: #e5b100; color: #000; }
+    footer { background: #fff; border-top: 1px solid #E0E0E0; }
     @media (max-width: 768px) {
-      .card-body img {
-        width: 60px !important;
-        height: 60px !important;
-      }
-      .container {
-        padding-left: 10px !important;
-        padding-right: 10px !important;
-      }
-      h2 {
-        font-size: 1.5rem !important;
-      }
-      h5, h6 {
-        font-size: 1.1rem !important;
-      }
-      .icon-circle {
-        width: 40px !important;
-        height: 40px !important;
-        font-size: 1.1rem !important;
-      }
+      .profile-card { flex-direction: column; text-align: center; }
+      .progress { max-width: 100%; }
+      .icon-circle { width: 40px; height: 40px; font-size: 1.1rem; }
+      .announcement-card { min-height: auto; }
     }
   </style>
 </head>
 <body>
 
-<!-- 教練主控台 Navbar -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+<nav class="navbar navbar-expand-lg navbar-light sticky-top">
   <div class="container">
-    <a class="navbar-brand fw-bold" href="{{ url_for('coach.dashboard') }}">
-      👨‍🏫 教練主控台
+    <a class="navbar-brand fw-bold" href="#">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" height="40" />
     </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#coachNavbar"
-      aria-controls="coachNavbar" aria-expanded="false" aria-label="切換導覽列">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+      data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+      aria-expanded="false" aria-label="切換導覽列">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse justify-content-end" id="coachNavbar">
-      <ul class="navbar-nav align-items-center">
-        <li class="nav-item nav-item-custom">
-          <a class="nav-link fw-bold text-warning" href="{{ url_for('profile.view_profile') }}">個人資訊</a>
-        </li>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ms-auto align-items-center">
+        <li class="nav-item"><a class="nav-link text-warning fw-bold" href="#">常見問題 Q&A</a></li>
+        <li class="nav-item"><a class="nav-link text-warning fw-bold" href="/voicebot/">語音助手</a></li>
+        <li class="nav-item"><a class="nav-link text-warning fw-bold" href="/chatbot/">聊天機器人</a></li>
+        <li class="nav-item"><a class="nav-link text-warning fw-bold" href="/profile/">個人資訊</a></li>
       </ul>
     </div>
   </div>
 </nav>
 
 
-<!-- 主內容 -->
+<!-- 內容 -->
 <div class="container py-5">
-  <h2 class="fw-bold mb-4 text-dark text-center">教練主控台</h2>
+  <h2 class="text-center mb-5">教練綜合管理系統</h2>
 
   <!-- 個人資訊 -->
-  <div class="card mb-4 shadow-sm">
-    <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-3">
-      <div class="d-flex align-items-center gap-3 p-3 bg-light rounded shadow-sm">
-        <img src="{{ url_for('static', filename=current_user.profile_pic) }}"
-             alt="頭貼" width="80" height="80"
-             style="border-radius: 50%; object-fit: cover; border: 2px solid #dee2e6;" />
-        <div>
-          <h5 class="mb-1 fw-bold">👤 {{ current_user.username }}</h5>
-          <p class="mb-1 text-secondary">角色：{{ current_user.role }}</p>
-          <small class="text-muted">上次登入：2025/04/11</small>
-        </div>
+  <div class="profile-card mb-4">
+    <div class="d-flex align-items-center gap-3 profile-info">
+      <img src="{{ url_for('static', filename=current_user.profile_pic) }}"
+           alt="頭貼" width="80" height="80"
+           style="border-radius: 50%; object-fit: cover; border: 2px solid #dee2e6;" />
+      <div>
+        <h5>👤 {{ current_user.username }}</h5>
+        <p>角色：{{ current_user.role }}</p>
+        <small>上次登入：2025/04/11</small>
       </div>
-      <div class="text-end flex-grow-1">
-        <p class="mb-1">本週訓練完成度</p>
-        <div class="progress" style="max-width: 180px;">
-          <div class="progress-bar bg-warning" style="width: 80%"></div>
-        </div>
+    </div>
+    <div class="text-end flex-grow-1">
+      <p class="mb-1">本週隊伍訓練完成度</p>
+      <div class="progress" style="max-width: 180px;">
+        <div class="progress-bar" style="width: 60%"></div>
       </div>
     </div>
   </div>
-  <div class="row g-4 justify-content-center">
 
-    <!-- 公告管理 -->
-    <div class="col-md-12 col-lg-6">
-      <div class="card card-yellow h-100 text-center p-3 shadow-sm">
-        <div class="card-body d-flex flex-column justify-content-between">
-          <div>
-            <div class="icon-circle fs-2 mb-3">📢</div>
-            <h5 class="fw-bold">公告管理</h5>
-            <p class="text-muted small">建立與管理你的公告內容。</p>
-          </div>
-          <div class="d-grid gap-2 mt-3">
-            <a href="{{ url_for('coach.announcements') }}" class="btn btn-yellow">📄 管理公告</a>
-          </div>
-        </div>
-      </div>
-    </div>
+  <!-- 公告 -->
+  <div class="alert alert-warning d-flex align-items-center gap-2 mb-5">
+    <span class="fs-5">📢</span>
+    <div><strong>公告：</strong> 本週請教練記得更新隊伍訓練進度。</div>
+  </div>
 
-    <!-- 點名 -->
-    <div class="col-md-12 col-lg-6">
-      <div class="card card-yellow h-100 text-center p-3 shadow-sm">
-        <div class="card-body d-flex flex-column justify-content-between">
-          <div>
-            <div class="icon-circle fs-2 mb-3">👥</div>
-            <h5 class="fw-bold">點名系統</h5>
-            <p class="text-muted small">管理出席狀態與出席紀錄。</p>
-          </div>
-          <div class="d-grid gap-2 mt-3">
-            <a href="{{ url_for('coach.roll_call') }}" class="btn btn-yellow">📝 開始點名</a>
-          </div>
+  <h5 class="fw-bold mb-3">🗒️ 我的公告管理</h5>
+  {% if announcements %}
+  <div class="row g-4 mb-5">
+    {% for ann in announcements %}
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="announcement-card">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <small class="date">{{ ann.date.strftime('%Y-%m-%d') }}</small>
+          <span class="category-tag {{ ann.category }}">{{ ann.category }}</span>
         </div>
+        <h6 class="fw-bold">{{ ann.title }}</h6>
+        <p class="content">{{ ann.content }}</p>
+        <div class="text-end text-muted small">發布者：{{ current_user.username }}</div>
       </div>
     </div>
-    <!-- 派發訓練 -->
-    <div class="col-md-12 col-lg-6">
-      <div class="card card-yellow h-100 text-center p-3 shadow-sm">
-        <div class="card-body d-flex flex-column justify-content-between">
-          <div>
-            <div class="icon-circle fs-2 mb-3">👥</div>
-            <h5 class="fw-bold">派發訓練項目</h5>
-            <p class="text-muted small">派發訓練</p>
-          </div>
-          <div class="d-grid gap-2 mt-3">
-            <a href="{{ url_for('coach.assign_training') }}" class="btn btn-yellow">派發訓練項目</a>
-          </div>
-        </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p>目前尚未新增公告。</p>
+  {% endif %}
+
+  <!-- 功能 -->
+  <h5 class="fw-bold mb-3">📌 教練功能</h5>
+  <div class="row g-4 mb-5">
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card-yellow h-100 text-center p-4 d-flex flex-column">
+        <div class="icon-circle mb-3">📢</div>
+        <h6 class="fw-bold">公告管理</h6>
+        <p class="text-muted small">發布、修改與刪除公告。</p>
+        <a href="/coach/announcements" class="btn btn-yellow mt-auto py-2 w-100">前往管理</a>
       </div>
     </div>
-    <!-- 睡眠紀錄 -->
-    <div class="col-md-12 col-lg-6">
-      <div class="card card-yellow h-100 text-center p-3 shadow-sm">
-        <div class="card-body d-flex flex-column justify-content-between">
-          <div>
-            <div class="icon-circle fs-2 mb-3">🛏</div>
-            <h5 class="fw-bold">睡眠紀錄</h5>
-            <p class="text-muted small">管理選手睡眠時間。</p>
-          </div>
-          <div class="d-grid gap-2 mt-3">
-            <a href="{{ url_for('coach.sleep_record') }}" class="btn btn-yellow">📝 開始記錄</a>
-          </div>
-        </div>
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card-yellow h-100 text-center p-4 d-flex flex-column">
+        <div class="icon-circle mb-3">✅</div>
+        <h6 class="fw-bold">點名系統</h6>
+        <p class="text-muted small">管理學生出勤狀況。</p>
+        <a href="/coach/rollcall" class="btn btn-yellow mt-auto py-2 w-100">開始管理</a>
       </div>
-    </div> 
-    <!-- 選手心理 -->
-    <div class="col-md-12 col-lg-6">
-      <div class="card card-yellow h-100 text-center p-3 shadow-sm">
-        <div class="card-body d-flex flex-column justify-content-between">
-          <div>
-            <div class="icon-circle fs-2 mb-3">📊</div>
-            <h5 class="fw-bold">選手心理</h5>
-            <p class="text-muted small">管理選手心理狀況。</p>
-          </div>
-          <div class="d-grid gap-2 mt-3">
-            <a href="{{ url_for('coach.stress_query') }}" class="btn btn-yellow">📝 開始查詢</a>
-          </div>
-        </div>
+    </div>
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card-yellow h-100 text-center p-4 d-flex flex-column">
+        <div class="icon-circle mb-3">🏋️</div>
+        <h6 class="fw-bold">派發訓練</h6>
+        <p class="text-muted small">建立並派發訓練任務。</p>
+        <a href="/coach/tasks" class="btn btn-yellow mt-auto py-2 w-100">派發任務</a>
       </div>
-    </div> 
-    <div class="col-md-12 col-lg-6">
+    </div>
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card-yellow h-100 text-center p-4 d-flex flex-column">
+        <div class="icon-circle mb-3">📊</div>
+        <h6 class="fw-bold">訓練分析</h6>
+        <p class="text-muted small">檢視數據與生成報告。</p>
+        <a href="/coach/analysis" class="btn btn-yellow mt-auto py-2 w-100">查看報告</a>
+      </div>
+    </div>
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card-yellow h-100 text-center p-4 d-flex flex-column">
+        <div class="icon-circle mb-3">🛌</div>
+        <h6 class="fw-bold">睡眠紀錄</h6>
+        <p class="text-muted small">追蹤學生睡眠狀況。</p>
+        <a href="/coach/sleep_record" class="btn btn-yellow mt-auto py-2 w-100">查看紀錄</a>
+      </div>
+    </div>
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card-yellow h-100 text-center p-4 d-flex flex-column">
+        <div class="icon-circle mb-3">🧠</div>
+        <h6 class="fw-bold">心理追蹤</h6>
+        <p class="text-muted small">關注學生壓力與心理狀態。</p>
+        <a href="/coach/stress_query" class="btn btn-yellow mt-auto py-2 w-100">查看狀態</a>
+      </div>
+    </div>
+  </div>
+      <div class="col-md-12 col-lg-6">
       <div class="card card-yellow h-100 text-center p-3 shadow-sm">
         <div class="card-body d-flex flex-column justify-content-between">
           <div>
@@ -213,17 +223,16 @@
           </div>
         </div>
       </div>
-    </div> 
-  </div>
+    </div>
 
   <!-- 登出 -->
-  <div class="text-end">
-    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-secondary">🔓 登出帳號</a>
+  <div class="text-end mb-5">
+    <a href="/logout" class="btn btn-outline-secondary">🔓 登出帳號</a>
   </div>
 </div>
 
 <!-- Footer -->
-<footer class="text-center text-muted mt-5 py-3 bg-white border-top">
+<footer class="text-center text-muted py-3">
   <small>© 教練系統 – 測試版本</small>
 </footer>
 

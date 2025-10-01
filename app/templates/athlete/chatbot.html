@@ -15,9 +15,34 @@
             height: 100vh;
         }
 
+        /* 返回按鈕 */
+        .back-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .back-btn:hover {
+            background-color: #2563eb;
+        }
+
         h1 {
-            margin-top: 30px;
+            margin-top: 60px;
             color: #1e40af;
+            text-align: center;
         }
 
         #chat-box {
@@ -26,7 +51,7 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             width: 90%;
             max-width: 500px;
-            height: 500px;
+            height: 60vh;
             margin: 20px 0;
             padding: 15px;
             overflow-y: auto;
@@ -60,7 +85,7 @@
             justify-content: center;
             align-items: center;
             gap: 10px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             width: 90%;
             max-width: 500px;
         }
@@ -73,7 +98,7 @@
             font-size: 16px;
         }
 
-        button {
+        button.send-btn {
             padding: 10px 15px;
             border: none;
             border-radius: 10px;
@@ -83,17 +108,37 @@
             font-size: 16px;
         }
 
-        button:hover {
+        button.send-btn:hover {
             background-color: #2563eb;
+        }
+
+        /* 響應式 */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 20px;
+            }
+            #chat-box {
+                height: 55vh;
+            }
+            input {
+                font-size: 14px;
+            }
+            button.send-btn {
+                font-size: 14px;
+                padding: 8px 12px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- 返回主頁按鈕 (← 圓形) -->
+    <a href="/dashboard" class="back-btn">←</a>
+
     <h1>桌球教學聊天機器人</h1>
     <div id="chat-box"></div>
     <div id="input-area">
         <input type="text" id="user-input" placeholder="輸入訊息...">
-        <button onclick="sendMessage()">送出</button>
+        <button class="send-btn" onclick="sendMessage()">送出</button>
     </div>
 
     <script>

@@ -1,6 +1,7 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey
 from app.database import Base  # 你專案的 Base
+from sqlalchemy.orm import relationship
 
 class FoodPhoto(Base):
     __tablename__ = 'food_photos'
@@ -11,3 +12,4 @@ class FoodPhoto(Base):
     upload_time = Column(DateTime, default=datetime.utcnow)
     comment = Column(Text, nullable=True)
     comment_time = Column(DateTime, nullable=True)
+    athlete = relationship("User", backref="food_photos")
