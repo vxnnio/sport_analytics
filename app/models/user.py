@@ -9,9 +9,7 @@ class User(Base):
     username = Column(String(80), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
     role = Column(String(20), nullable=False)
-    
     line_user_id = Column(String(128), unique=True, nullable=True)
-
     full_name = Column(String(100), default="")
     birth_date = Column(Date, nullable=True)
     gender = Column(String(10), default="")  # 建議用 '男', '女', '其他'
@@ -21,7 +19,6 @@ class User(Base):
     
     bio = Column(String(500), default="")
     profile_pic = Column(String(255), default="uploads/default.png")
-
     # 資料關聯
     announcements = relationship("Announcement", back_populates="coach")
     evaluations = relationship("Evaluation", back_populates="user")
