@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ current_user.username }} 的個人自介</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}?v={{ range(1000)|random }}" type="image/x-icon" />
     <style>
         body {
             font-family: "微軟正黑體", sans-serif;
