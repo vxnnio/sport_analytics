@@ -3,24 +3,68 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <title>評估紀錄</title>
+    <title>評估紀錄 | 運動員系統</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}?v={{ range(1000)|random }}" type="image/x-icon" />
+
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- Bootstrap for styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f4f7fb;
+            text-align: center;
+            padding: 50px 20px;
+        }
+
+        h1 {
+            font-weight: 800;
+            color: #1e3a8a;
+            margin-bottom: 35px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        }
+
+        a.btn {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 40px;
+            border-radius: 8px;
+            padding: 12px 24px;
+        }
+
+        .chart-container {
+            position: relative;
+            margin: 0 auto;
+            width: 90%;             /* 寬度再放大 */
+            max-width: 960px;       /* 最大寬度 */
+            background: #fff;
+            padding: 30px 40px;
+            border-radius: 14px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+    </style>
 </head>
+
 <body>
-    <h1>評估紀錄</h1>
+    <h1>📈 評估紀錄</h1>
 
     <a href="{{ url_for('evaluation.evaluation_form') }}" class="btn btn-primary">填寫今日評估</a>
 
     {% if records_data and records_data|length > 0 %}
-    <canvas id="evaluationChart" width="800" height="400"></canvas>
+    <div class="chart-container">
+        <canvas id="evaluationChart"></canvas>
+    </div>
 
     <script>
-        // 後端 evaluation.py 準備好的乾淨資料
         const recordsData = {{ records_data|tojson }};
-        console.log(recordsData);
-
-        // 拆出各欄位
         const labels = recordsData.map(r => r.eval_date_str);
         const trainingStatus = recordsData.map(r => r.training_status);
         const fitness = recordsData.map(r => r.fitness);
@@ -35,28 +79,28 @@
                     data: trainingStatus,
                     borderColor: 'rgba(75, 192, 192, 1)',
                     backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    tension: 0.3
+                    tension: 0.35
                 },
                 {
                     label: 'Fitness',
                     data: fitness,
                     borderColor: 'rgba(255, 99, 132, 1)',
                     backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    tension: 0.3
+                    tension: 0.35
                 },
                 {
                     label: 'Sleep',
                     data: sleep,
                     borderColor: 'rgba(54, 162, 235, 1)',
                     backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    tension: 0.3
+                    tension: 0.35
                 },
                 {
                     label: 'Appetite',
                     data: appetite,
                     borderColor: 'rgba(255, 206, 86, 1)',
                     backgroundColor: 'rgba(255, 206, 86, 0.2)',
-                    tension: 0.3
+                    tension: 0.35
                 }
             ]
         };
@@ -66,17 +110,21 @@
             data: data,
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: { position: 'top' },
                     title: { display: true, text: '評估分數折線圖' }
                 },
                 scales: {
-                    y: { beginAtZero: true }
+                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
                 }
             }
         };
 
-        new Chart(document.getElementById('evaluationChart'), config);
+        const ctx = document.getElementById('evaluationChart').getContext('2d');
+        const chartContainer = document.querySelector('.chart-container');
+        chartContainer.style.height = '480px'; // 再高一點
+        new Chart(ctx, config);
     </script>
     {% else %}
         <p>尚無評估紀錄。</p>
