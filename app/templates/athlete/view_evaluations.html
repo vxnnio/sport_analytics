@@ -54,9 +54,12 @@
 </head>
 
 <body>
+    <!-- 返回箭頭 -->
+    <a href="javascript:history.back()" class="back-btn">←</a>
+
     <h1>📈 評估紀錄</h1>
 
-    <a href="{{ url_for('evaluation.evaluation_form') }}" class="btn btn-primary">填寫今日評估</a>
+    
 
     {% if records_data and records_data|length > 0 %}
     <div class="chart-container">
@@ -74,60 +77,49 @@
         const data = {
             labels: labels,
             datasets: [
-                {
-                    label: 'Training Status',
-                    data: trainingStatus,
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    tension: 0.35
-                },
-                {
-                    label: 'Fitness',
-                    data: fitness,
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    tension: 0.35
-                },
-                {
-                    label: 'Sleep',
-                    data: sleep,
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    tension: 0.35
-                },
-                {
-                    label: 'Appetite',
-                    data: appetite,
-                    borderColor: 'rgba(255, 206, 86, 1)',
-                    backgroundColor: 'rgba(255, 206, 86, 0.2)',
-                    tension: 0.35
-                }
+                { label: 'Training Status', data: trainingStatus, borderColor: 'rgba(75, 192, 192, 1)', backgroundColor: 'rgba(75, 192, 192, 0.2)', tension: 0.35 },
+                { label: 'Fitness', data: fitness, borderColor: 'rgba(255, 99, 132, 1)', backgroundColor: 'rgba(255, 99, 132, 0.2)', tension: 0.35 },
+                { label: 'Sleep', data: sleep, borderColor: 'rgba(54, 162, 235, 1)', backgroundColor: 'rgba(54, 162, 235, 0.2)', tension: 0.35 },
+                { label: 'Appetite', data: appetite, borderColor: 'rgba(255, 206, 86, 1)', backgroundColor: 'rgba(255, 206, 86, 0.2)', tension: 0.35 }
             ]
         };
 
-        const config = {
-            type: 'line',
-            data: data,
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'top' },
-                    title: { display: true, text: '評估分數折線圖' }
-                },
-                scales: {
-                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
-                }
-            }
-        };
+        const config = { type: 'line', data: data, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' }, title: { display: true, text: '評估分數折線圖' } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } } };
 
         const ctx = document.getElementById('evaluationChart').getContext('2d');
         const chartContainer = document.querySelector('.chart-container');
-        chartContainer.style.height = '480px'; // 再高一點
+        chartContainer.style.height = '480px';
         new Chart(ctx, config);
     </script>
     {% else %}
         <p>尚無評估紀錄。</p>
     {% endif %}
+
+    <style>
+        /* 返回圓形按鈕樣式 */
+        .back-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
+
+        .back-btn:hover {
+            background-color: #2563eb;
+        }
+    </style>
 </body>
+
 </html>

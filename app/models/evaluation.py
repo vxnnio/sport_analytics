@@ -8,8 +8,7 @@ class Evaluation(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
-    eval_date = Column(Date, default=date.today, nullable=False)
-    
+    eval_date = Column(Date, nullable=False)
     training_status = Column(Integer)  # 1~5
     fitness = Column(Integer)
     sleep = Column(Integer)

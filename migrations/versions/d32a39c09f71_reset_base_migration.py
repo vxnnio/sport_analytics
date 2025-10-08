@@ -1,8 +1,8 @@
-"""Add completed_at to tasks
+"""reset base migration
 
-Revision ID: 8b93e32464d4
-Revises: 5c117367ee22
-Create Date: 2025-09-26 13:39:25.815494
+Revision ID: d32a39c09f71
+Revises: 
+Create Date: 2025-10-08 14:31:51.875409
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = '8b93e32464d4'
-down_revision = '5c117367ee22'
+revision = 'd32a39c09f71'
+down_revision = None
 branch_labels = None
 depends_on = None
 
@@ -31,6 +31,7 @@ def downgrade():
     sa.Column('item', mysql.VARCHAR(length=100), nullable=True),
     sa.Column('description', mysql.VARCHAR(length=255), nullable=True),
     sa.Column('completed', mysql.TINYINT(display_width=1), autoincrement=False, nullable=True),
+    sa.Column('completed_at', mysql.DATETIME(), nullable=True),
     sa.Column('athlete_id', mysql.INTEGER(display_width=11), autoincrement=False, nullable=True),
     sa.ForeignKeyConstraint(['athlete_id'], ['user.id'], name='tasks_ibfk_1'),
     sa.PrimaryKeyConstraint('id'),
