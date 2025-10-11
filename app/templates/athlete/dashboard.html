@@ -7,173 +7,166 @@
   <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}?v={{ range(1000)|random }}" type="image/x-icon" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
   <style>
+    /* ======= 全局設定 ======= */
     body {
-      background-color: #F4F7FA;
+      background-color: #F5F7FA;
       font-family: 'Noto Sans', sans-serif;
       color: #333;
+      padding-top: 90px; /* ⭐ navbar固定後預留空間 */
     }
 
-    /* Navbar */
+    h2, h5, h6 {
+      color: #1F3B6D;
+      font-weight: 700;
+    }
+
+    /* ======= Navbar 固定 ======= */
     .navbar {
       background: #fff;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      position: fixed;  /* ⭐ 固定 */
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1050;
     }
+
     .nav-link.text-warning {
+      color: #C49B00 !important;
       transition: 0.3s;
     }
     .nav-link.text-warning:hover {
       color: #F9C300 !important;
+      transform: scale(1.05);
     }
 
-    /* Header */
-    h2 {
-      font-weight: 700;
-      color: #1F3B6D;
+    /* ======= 主要內容容器（縮小寬度） ======= */
+    .content-container {
+      max-width: 1100px;  /* ⭐ 縮小一點讓內容集中 */
+      margin: 0 auto;
     }
 
-    /* 個人資訊卡 */
+    /* ======= Profile Card ======= */
     .profile-card {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-      padding: 1.5rem;
+      background: linear-gradient(135deg, #fff, #fdf8e3);
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      padding: 1.8rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
       gap: 1rem;
-      transition: transform 0.3s;
+      transition: all 0.3s ease;
     }
     .profile-card:hover {
       transform: translateY(-4px);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.1);
     }
     .profile-info h5 {
-      margin: 0;
       font-weight: 700;
-    }
-    .profile-info p, .profile-info small {
       margin: 0;
     }
     .progress {
-      height: 12px;
+      height: 10px;
       border-radius: 10px;
       background-color: #E0E0E0;
     }
     .progress-bar {
-      background-color: #F9C300;
+      background: linear-gradient(90deg, #F9C300, #FFD43B);
     }
 
-    /* 公告區 */
-    .alert-warning {
-      background: #FFF8E1;
-      border: none;
-      font-size: 1rem;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    }
-
-    /* 公告卡 */
+    /* ======= Announcement Card ======= */
     .announcement-card {
       background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
       padding: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: transform 0.3s, box-shadow 0.3s;
+      transition: all 0.3s ease;
     }
     .announcement-card:hover {
       transform: translateY(-6px);
-      box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.12);
     }
     .category-tag {
-      font-size: 0.85rem;
-      padding: 0.25rem 0.5rem;
-      border-radius: 6px;
+      font-size: 0.8rem;
       font-weight: 500;
+      border-radius: 8px;
+      padding: 0.3rem 0.6rem;
     }
     .訓練 { background: #E3F2FD; color: #1976D2; }
     .賽事 { background: #FFEBEE; color: #D32F2F; }
     .系統 { background: #FFF3E0; color: #FF8F00; }
 
-    /* 訓練/功能卡 */
-    .card-yellow {
-      background: #FFF9E6;
+    /* ======= 功能卡統一風格 ======= */
+    .card-feature {
+      background: #fff;
       border: none;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      border-radius: 18px;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.08);
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      transition: transform 0.3s, box-shadow 0.3s;
+      text-align: center;
+      padding: 1.8rem;
+      transition: all 0.35s ease;
+      height: 100%;
     }
-    .card-yellow:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+    .card-feature:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 14px 30px rgba(0,0,0,0.12);
     }
+
     .icon-circle {
-      width: 50px;
-      height: 50px;
-      background-color: #F9C300;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
+      background: linear-gradient(135deg, #FFD43B, #F9C300);
+      color: #1a1a1a;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.3rem;
-      color: #1a1a1a;
+      font-size: 1.6rem;
       margin: 0 auto 1rem auto;
-    }
-    .btn-yellow {
-      background-color: #F9C300;
-      color: #1a1a1a;
-      font-weight: 600;
-      border-radius: 8px;
-      border: none;
-      transition: 0.3s;
-    }
-    .btn-yellow:hover {
-      background-color: #e5b100;
-      color: #000;
+      box-shadow: inset 0 2px 4px rgba(255,255,255,0.6);
     }
 
-    /* Footer */
+    .btn-main {
+      background: linear-gradient(90deg, #F9C300, #FFD43B);
+      border: none;
+      border-radius: 12px;
+      color: #1a1a1a;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    .btn-main:hover {
+      background: linear-gradient(90deg, #FFD43B, #F9C300);
+      transform: translateY(-2px);
+    }
+
+    /* ======= Footer ======= */
     footer {
       background: #fff;
       border-top: 1px solid #E0E0E0;
     }
 
-    /* 響應式 */
+    /* ======= 響應式 ======= */
     @media (max-width: 768px) {
-      .profile-card {
-        flex-direction: column;
-        text-align: center;
-      }
-      .progress {
-        max-width: 100%;
-      }
-      .icon-circle {
-        width: 40px;
-        height: 40px;
-        font-size: 1.1rem;
-      }
-      .announcement-card {
-        min-height: auto;
-      }
+      .profile-card { flex-direction: column; text-align: center; }
+      .icon-circle { width: 48px; height: 48px; font-size: 1.2rem; }
     }
   </style>
 </head>
 <body>
 
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-light sticky-top">
+<nav class="navbar navbar-expand-lg navbar-light">
   <div class="container">
     <a class="navbar-brand fw-bold" href="#">
       <img src="static/logo.png" alt="Logo" height="40" />
     </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="切換導覽列">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -187,15 +180,15 @@
   </div>
 </nav>
 
-<!-- 內容 -->
-<div class="container py-5">
+<!-- 內容（縮小寬度的主容器） -->
+<div class="content-container py-5">
+
   <h2 class="text-center mb-5">運動員綜合管理系統</h2>
 
   <!-- 個人資訊 -->
   <div class="profile-card mb-4">
     <div class="d-flex align-items-center gap-3 profile-info">
-      <img src="{{ url_for('static', filename=current_user.profile_pic) }}"
-           alt="頭貼" width="80" height="80"
+      <img src="{{ url_for('static', filename=current_user.profile_pic) }}" alt="頭貼" width="80" height="80"
            style="border-radius: 50%; object-fit: cover; border: 2px solid #dee2e6;" />
       <div>
         <h5>👤 {{ current_user.username }}</h5>
@@ -214,102 +207,72 @@
   <!-- 公告 -->
   <div class="alert alert-warning d-flex align-items-center gap-2 mb-5">
     <span class="fs-5">📢</span>
-    <div>
-      <strong>公告：</strong> 下週將進行系統維護，請提早完成訓練紀錄填寫。
-    </div>
+    <div><strong>公告：</strong> 下週將進行系統維護，請提早完成訓練紀錄填寫。</div>
   </div>
 
+  <!-- 教練公告 -->
   <h5 class="fw-bold mb-3">🗒️ 教練公告</h5>
-  {% if announcements %}
   <div class="row g-4 mb-5">
     {% for ann in announcements %}
     <div class="col-12 col-md-6 col-lg-4">
       <div class="announcement-card">
         <div class="d-flex justify-content-between align-items-center mb-2">
-          <small class="date">{{ ann.date.strftime('%Y-%m-%d') }}</small>
+          <small class="text-muted">{{ ann.date.strftime('%Y-%m-%d') }}</small>
           <span class="category-tag {{ ann.category }}">{{ ann.category }}</span>
         </div>
         <h6 class="fw-bold">{{ ann.title }}</h6>
-        <p class="content">{{ ann.content }}</p>
-        <div class="text-end text-muted small">
-          教練ID: {{ ann.coach_id }}
-        </div>
+        <p class="text-muted">{{ ann.content }}</p>
+        <div class="text-end text-muted small">教練ID: {{ ann.coach_id }}</div>
       </div>
     </div>
     {% endfor %}
   </div>
-  {% else %}
-  <p>目前沒有公告。</p>
-  {% endif %}
 
   <!-- 訓練功能 -->
   <h5 class="fw-bold mb-3">📌 訓練功能</h5>
   <div class="row g-4 mb-5">
-    <!-- 功能卡模板 -->
+    {% set features = [
+      ('📅','每日訓練狀況','記錄疲勞與恢復狀態。','/evaluation/form','開始填寫'),
+      ('✅','查看點名紀錄','確認每日出席紀錄','/athlete/attendance','開始查看'),
+      ('📤','訓練任務','整合裝置資料，管理訓練數據。','/athlete/tasks','上傳資料'),
+      ('📋','訓練查看','週期性填寫訓練反饋與自評紀錄。','/athlete/history','開始評估'),
+      ('🛏','睡眠紀錄','選手睡眠時間。',"/athlete/sleep_record",'開始記錄'),
+      ('🍎','飲食控制','週期性填寫飲食紀錄與管理。','/food/upload','上傳資料')
+    ] %}
+    {% for icon, title, desc, link, btn in features %}
     <div class="col-12 col-md-6 col-lg-4">
-      <div class="card-yellow h-100 text-center p-4 d-flex flex-column">
-        <div class="icon-circle mb-3">📅</div>
-        <h6 class="fw-bold">每日訓練狀況</h6>
-        <p class="text-muted small">記錄疲勞與恢復狀態。</p>
-        <a href="/evaluation/form" class="btn btn-yellow mt-auto py-2 w-100">開始填寫</a>
+      <div class="card-feature">
+        <div class="icon-circle">{{ icon }}</div>
+        <h6 class="fw-bold mb-2">{{ title }}</h6>
+        <p class="text-muted small flex-grow-1">{{ desc }}</p>
+        <a href="{{ link }}" class="btn btn-main mt-auto py-2 w-100">{{ btn }}</a>
       </div>
     </div>
-    <div class="col-12 col-md-6 col-lg-4">
-  <div class="card-yellow h-100 text-center p-4 d-flex flex-column">
-    <div class="icon-circle mb-3">📅</div>
-    <h6 class="fw-bold">查看點名紀錄</h6>
-    <p class="text-muted small">確認每日出席紀錄</p>
-    <a href="/athlete/attendance" class="btn btn-yellow mt-auto py-2 w-100">開始查看</a>
-  </div>
-</div>
-    <div class="col-12 col-md-6 col-lg-4">
-      <div class="card-yellow h-100 text-center p-4 d-flex flex-column">
-        <div class="icon-circle mb-3">📤</div>
-        <h6 class="fw-bold">訓練任務</h6>
-        <p class="text-muted small">整合裝置資料，管理訓練數據。</p>
-        <a href="/athlete/tasks" class="btn btn-yellow mt-auto py-2 w-100">上傳資料</a>
-      </div>
-    </div>
-    <div class="col-12 col-md-6 col-lg-4">
-      <div class="card-yellow h-100 text-center p-4 d-flex flex-column">
-        <div class="icon-circle mb-3">📋</div>
-        <h6 class="fw-bold">訓練查看</h6>
-        <p class="text-muted small">週期性填寫訓練反饋與自評紀錄。</p>
-        <a href="/athlete/history" class="btn btn-yellow mt-auto py-2 w-100">開始評估</a>
-      </div>
-    </div>
-    <div class="col-12 col-md-6 col-lg-4">
-      <div class="card-yellow h-100 text-center p-4 d-flex flex-column">
-        <div class="icon-circle mb-3">🛏</div>
-        <h6 class="fw-bold">睡眠紀錄</h6>
-        <p class="text-muted small">選手睡眠時間。</p>
-        <a href="{{ url_for('athlete.sleep_record') }}" class="btn btn-yellow mt-auto py-2 w-100">開始記錄</a>
-      </div>
-    </div>
-    <div class="col-12 col-md-6 col-lg-4">
-      <div class="card-yellow h-100 text-center p-4 d-flex flex-column">
-        <div class="icon-circle mb-3">🍎</div>
-        <h6 class="fw-bold">飲食控制</h6>
-        <p class="text-muted small">週期性填寫飲食紀錄與管理。</p>
-        <a href="/food/upload" class="btn btn-yellow mt-auto py-2 w-100">上傳資料</a>
-      </div>
-    </div>
+    {% endfor %}
   </div>
 
-  <!-- 壓力測試 -->
-  <h5 class="fw-bold mb-3">🧠 壓力測試</h5>
+  <!-- 壓力與 AI 測試（⭐ 對齊上方 card） -->
+  <h5 class="fw-bold mb-3">🧠 壓力與 AI 測試</h5>
   <div class="row g-4 mb-5">
-    <div class="col-12 col-md-6">
-      <div class="card-yellow h-100 d-flex flex-column text-center p-4">
-        <div class="icon-circle mb-3">🧠</div>
-        <h6 class="fw-bold">壓力評估表單</h6>
-        <p class="text-muted small">心理壓力量表，幫助你追蹤心理狀態。</p>
-        <a href="/stress/evaluate" class="btn btn-yellow mt-auto py-2 w-100">開始測驗</a>
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card-feature">
+        <div class="icon-circle">💭</div>
+        <h6 class="fw-bold mb-2">壓力評估表單</h6>
+        <p class="text-muted small flex-grow-1">心理壓力量表，幫助你追蹤心理狀態。</p>
+        <a href="/stress/evaluate" class="btn btn-main mt-auto py-2 w-100">開始測驗</a>
       </div>
     </div>
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card-feature">
+        <div class="icon-circle">🎥</div>
+        <h6 class="fw-bold mb-2">AI 影片分析</h6>
+        <p class="text-muted small flex-grow-1">利用 AI 模型協助分析影片內容，快速洞察心理壓力變化。</p>
+        <a href="http://ai.pingpro.xyz/" target="_blank" class="btn btn-main mt-auto py-2 w-100">開始測驗</a>
+      </div>
+    </div>
+  </div>
 
-
-  <!-- 登出按鈕 -->
+  <!-- 登出 -->
   <div class="text-end mb-5">
     <a href="/logout" class="btn btn-outline-secondary">🔓 登出帳號</a>
   </div>
@@ -317,7 +280,7 @@
 
 <!-- Footer -->
 <footer class="text-center text-muted py-3">
-  <small>© 運動員系統 </small>
+  <small>© 運動員系統</small>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

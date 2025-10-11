@@ -1,5 +1,3 @@
-# app/routes/athlete.py
-
 from flask import Blueprint, render_template, jsonify, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from app.database import get_db
