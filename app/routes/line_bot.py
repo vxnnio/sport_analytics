@@ -201,7 +201,7 @@ def get_user_by_line_id(line_id):
 
 
 def get_announcements():
-    url = "https://a376b40e3319.ngrok-free.app/coach/api/announcements"
+    url = "https://dashboard.pingpro.xyz/coach/api/announcements"
     try:
         res = requests.get(url)
         if res.status_code == 200:
@@ -259,7 +259,7 @@ def get_evaluation_card():
                     "action": {
                         "type": "uri",
                         "label": "前往填寫",
-                        "uri": "https://a376b40e3319.ngrok-free.app/evaluation/form"
+                        "uri": "https://dashboard.pingpro.xyz/evaluation/form"
                     }
                 }
             ]
@@ -299,7 +299,7 @@ def create_rich_menu():
                 action=MessageAction(label="Logo", text="這是 PingPro Logo")),
             RichMenuArea(
                 bounds=RichMenuBounds(x=1667, y=843, width=833, height=843),
-                action={"type": "uri", "label": "網站", "uri": "https://a376b40e3319.ngrok-free.app"}
+                action={"type": "uri", "label": "網站", "uri": "https://dashboard.pingpro.xyz"}
             ),
         ]
     )
