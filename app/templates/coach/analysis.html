@@ -15,6 +15,7 @@
 </head>
 <body>
 <div class="container mt-5">
+    
     <h2 class="text-center text-primary mb-4">📊 學生訓練分析</h2>
 
     <!-- 任務完成圖表 -->
@@ -40,7 +41,8 @@
                     <td>{{ s.full_name or s.username }}</td>
                     <td>{{ s.strength_completed or 0 }} / {{ s.strength_total }}</td>
                     <td>{{ s.skill_completed or 0 }} / {{ s.skill_total }}</td>
-                    <td>{{ ((s.total_completed or 0)/s.total*100)|round(1) }}</td>
+                    <td>{{ (s.total_completed or 0)/s.total*100 if s.total else 0 | round(1) }}</td>
+
                 </tr>
                 {% endfor %}
             </tbody>
